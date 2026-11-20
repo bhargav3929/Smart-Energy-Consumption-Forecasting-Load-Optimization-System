@@ -14,7 +14,7 @@ Open `http://127.0.0.1:8005` — the workbench loads directly (no landing page).
 - Server-side rate limit: **15 forecasts / hour** (SQLite, WAL), auto-refunded if the city can't be found.
 - Three ways to provide data: 4 one-click presets, an editable appliance table, or a CSV/JSON upload (`appliance,watts,hours_per_day,peak_hour,shiftable`).
 - Interactive 24-hour baseline-vs-optimized SVG chart, scenario/facility comparison, printable report, forecast history.
-- Pure-Python dependencies only: `fastapi`, `uvicorn`, `httpx`, `python-dotenv`, `python-multipart`.
+- Pure-Python dependencies only: `starlette`, `uvicorn`, `httpx`, `python-dotenv`, `python-multipart`.
 
 ## Setup (plain English)
 1. Install Python 3.10 or newer.

@@ -1,13 +1,14 @@
-"""FastAPI app. Default port: 8005 -> http://127.0.0.1:8005"""
+"""Starlette app (pure Python, no pydantic). Default port: 8005 -> http://127.0.0.1:8005"""
 import csv
 import io
 import json
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
-from fastapi.staticfiles import StaticFiles
+from starlette.applications import Starlette
+from starlette.responses import FileResponse, JSONResponse, StreamingResponse
+from starlette.routing import Mount, Route
+from starlette.staticfiles import StaticFiles
 
 load_dotenv()
 
@@ -18,56 +19,60 @@ from .presets import PRESETS  # noqa: E402
 HOST, PORT = "127.0.0.1", 8005
 STATIC = Path(__file__).parent / "static"
 
-app = FastAPI(title="Smart Energy Consumption Forecasting & Load Optimization System")
 db.init()
-app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
 def _mask(k: str) -> str:
     return (k[:4] + "…" + k[-4:]) if len(k) > 10 else ("•" * len(k))
 
 
-@app.get("/")
-def index():
-    return FileResponse(STATIC / "index.html")
-
-
-@app.get("/api/status")
-def status():
+def _status_payload():
     key, src = db.get_groq_key()
     return {"quota": db.quota_status(), "has_key": bool(key), "key_source": src, "key_masked": _mask(key) if key else ""}
 
 
-@app.get("/api/presets")
-def presets():
-    return PRESETS
+async def _json_body(request):
+    try:
+        body = await request.json()
+        return body if isinstance(body, dict) else {}
+    except Exception:
+        return {}
 
 
-@app.post("/api/settings")
-async def save_settings(request: Request):
-    body = await request.json()
+async def index(request):
+    return FileResponse(STATIC / "index.html")
+
+
+async def status(request):
+    return JSONResponse(_status_payload())
+
+
+async def presets(request):
+    return JSONResponse(PRESETS)
+
+
+async def save_settings(request):
+    body = await _json_body(request)
     key = str(body.get("groq_api_key", "")).strip()
     if key and not key.startswith("gsk_"):
         return JSONResponse({"ok": False, "message": "Groq keys start with gsk_"}, status_code=400)
     db.set_setting("GROQ_API_KEY", key)
-    return {"ok": True, **status()}
+    return JSONResponse({"ok": True, **_status_payload()})
 
 
-@app.post("/api/test-key")
-async def test_key(request: Request):
-    try:
-        body = await request.json()
-    except Exception:
-        body = {}
+async def test_key(request):
+    body = await _json_body(request)
     key = str(body.get("groq_api_key", "")).strip() or db.get_groq_key()[0]
-    return await groq_client.test_key(key)
+    return JSONResponse(await groq_client.test_key(key))
 
 
-@app.post("/api/parse-log")
-async def parse_log(file: UploadFile = File(...)):
-    raw = (await file.read())[:512_000]
+async def parse_log(request):
+    form = await request.form()
+    upload = form.get("file")
+    if upload is None or not hasattr(upload, "read"):
+        return JSONResponse({"detail": "No file uploaded."}, status_code=400)
+    raw = (await upload.read())[:512_000]
     text = raw.decode("utf-8-sig", errors="replace").strip()
-    rows = []
     try:
         if text[:1] in "[{":
             data = json.loads(text)
@@ -75,7 +80,7 @@ async def parse_log(file: UploadFile = File(...)):
         else:
             rows = list(csv.DictReader(io.StringIO(text)))
     except Exception as e:
-        raise HTTPException(400, f"Could not parse file: {e}")
+        return JSONResponse({"detail": f"Could not parse file: {e}"}, status_code=400)
     norm = []
     for r in rows if isinstance(rows, list) else []:
         if isinstance(r, dict):
@@ -85,17 +90,17 @@ async def parse_log(file: UploadFile = File(...)):
                          "peak_hour": r.get("peak_hour", 18), "shiftable": r.get("shiftable", False)})
     clean, errors = energy.normalize_rows(norm)
     if errors and not clean:
-        raise HTTPException(400, " ".join(errors))
-    return {"appliances": clean, "warnings": errors}
+        return JSONResponse({"detail": " ".join(errors)}, status_code=400)
+    return JSONResponse({"appliances": clean, "warnings": errors})
 
 
-@app.post("/api/forecast")
-async def forecast(request: Request):
-    body = await request.json()
+async def forecast(request):
+    body = await _json_body(request)
     ticket = db.consume()
     if ticket is None:
         q = db.quota_status()
-        return JSONResponse({"error": f"Hourly limit reached (15/15 used). Resets in {q['reset_in'] // 60 + 1} min.", "quota": q}, status_code=429)
+        return JSONResponse({"error": f"Hourly limit reached (15/15 used). Resets in {q['reset_in'] // 60 + 1} min.", "quota": q},
+                            status_code=429)
 
     async def gen():
         try:
@@ -113,25 +118,48 @@ async def forecast(request: Request):
     return StreamingResponse(gen(), media_type="application/x-ndjson")
 
 
-@app.get("/api/history")
-def history():
-    return db.list_forecasts()
+async def history(request):
+    return JSONResponse(db.list_forecasts())
 
 
-@app.get("/api/history/{fid}")
-def history_item(fid: int):
-    d = db.get_forecast(fid)
+def _fid(request):
+    try:
+        return int(request.path_params["fid"])
+    except (KeyError, ValueError):
+        return None
+
+
+async def history_item(request):
+    fid = _fid(request)
+    d = db.get_forecast(fid) if fid is not None else None
     if not d:
-        raise HTTPException(404, "Forecast not found")
+        return JSONResponse({"detail": "Forecast not found"}, status_code=404)
     d["id"] = fid
-    return d
+    return JSONResponse(d)
 
 
-@app.delete("/api/history/{fid}")
-def history_delete(fid: int):
-    if not db.delete_forecast(fid):
-        raise HTTPException(404, "Forecast not found")
-    return {"ok": True}
+async def history_delete(request):
+    fid = _fid(request)
+    if fid is None or not db.delete_forecast(fid):
+        return JSONResponse({"detail": "Forecast not found"}, status_code=404)
+    return JSONResponse({"ok": True})
+
+
+routes = [
+    Route("/", index),
+    Route("/api/status", status),
+    Route("/api/presets", presets),
+    Route("/api/settings", save_settings, methods=["POST"]),
+    Route("/api/test-key", test_key, methods=["POST"]),
+    Route("/api/parse-log", parse_log, methods=["POST"]),
+    Route("/api/forecast", forecast, methods=["POST"]),
+    Route("/api/history", history),
+    Route("/api/history/{fid}", history_item, methods=["GET"]),
+    Route("/api/history/{fid}", history_delete, methods=["DELETE"]),
+    Mount("/static", app=StaticFiles(directory=STATIC), name="static"),
+]
+
+app = Starlette(routes=routes)
 
 
 if __name__ == "__main__":

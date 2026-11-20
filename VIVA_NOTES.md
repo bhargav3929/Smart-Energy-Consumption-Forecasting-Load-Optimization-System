@@ -13,7 +13,7 @@ Electricity is cheaper at some hours than others. Many utilities charge extra du
 Browser (HTML/CSS/JS, SVG chart)
    │  POST /api/forecast  (NDJSON stream: start → node → result | error)
    ▼
-FastAPI (app/main.py) ── SQLite smart_energy.db (WAL): settings, rate_limit, forecasts
+Starlette (app/main.py) ── SQLite smart_energy.db (WAL): settings, rate_limit, forecasts
    ▼
 app/pipeline.py
   Node 1  Appliance Log & City Gatekeeper   (4 s)  validate rows + Open-Meteo geocoding → lat/lon/country/timezone
