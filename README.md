@@ -48,3 +48,11 @@ python3 -m venv .venv && ./.venv/bin/python -m pip install -r requirements.txt &
 ```
 
 > Disclaimer: Predicted electricity bills and load-shifting schedules are educational estimates based on weather and tariff models and do not constitute professional utility or financial advice.
+
+Run the command:
+
+Windows (PowerShell):
+python -m venv .venv; .\.venv\Scripts\python.exe -m pip install -r requirements.txt; .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8005
+
+macOS / Linux (Terminal):
+python3 -m venv .venv && ./.venv/bin/python -m pip install -r requirements.txt && ./.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8005

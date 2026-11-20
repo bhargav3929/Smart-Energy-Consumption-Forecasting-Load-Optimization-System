@@ -2,6 +2,7 @@
 import csv
 import io
 import json
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -16,6 +17,7 @@ from . import db, energy, groq_client  # noqa: E402
 from .pipeline import run_pipeline  # noqa: E402
 from .presets import PRESETS  # noqa: E402
 
+os.environ.setdefault("PORT", "8005")  # dedicated port for this project
 HOST, PORT = "127.0.0.1", 8005
 STATIC = Path(__file__).parent / "static"
 
