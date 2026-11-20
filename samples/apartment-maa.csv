@@ -1,0 +1,8 @@
+appliance,watts,hours_per_day,peak_hour,shiftable
+Split AC #1 (Bedroom),1600,9,21,false
+Split AC #2 (Hall),1400,7,19,false
+Induction Stove,1800,2,19,false
+Microwave Oven,1200,0.5,19,false
+Mixer Grinder,500,0.5,18,true
+Refrigerator,85,24,0,false
+Water Pump,750,1,18,true

@@ -1,12 +1,7 @@
-"""Convenience launcher: python run.py  ->  http://127.0.0.1:8005"""
-import os
-
+"""Convenience launcher: python run.py  ->  http://127.0.0.1:8005 (HOST/PORT come from .env)"""
 import uvicorn
 
-os.environ.setdefault("PORT", "8005")
-
-HOST = "127.0.0.1"
-PORT = 8005
+from app import config
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host=HOST, port=PORT)
+    uvicorn.run("app.main:app", host=config.HOST, port=config.PORT)

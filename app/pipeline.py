@@ -111,7 +111,7 @@ def _clean_ai(d, fallback):
     return out
 
 
-async def run_pipeline(body: dict):
+async def run_pipeline(body: dict, key: str = "", tid: str = ""):
     run_id = uuid.uuid4().hex[:8]
     total_t0 = time.perf_counter()
     nodes_dbg = []
@@ -187,7 +187,6 @@ async def run_pipeline(body: dict):
     cur = tariff["currency"]
     rules = _rule_based(rep, factors, cur)
     strategist = {**rules, "source": "rules", "model": None, "fallback": False}
-    key, _src = db.get_groq_key()
     if key:
         compact = {
             "city": f"{geo['name']}, {geo['country']}", "avg_temp_c": factors.get("avg_temp"),
@@ -212,7 +211,9 @@ async def run_pipeline(body: dict):
             strategist = {**_clean_ai(res["data"], rules), "source": "groq", "model": res["model"], "fallback": res["fallback"]}
             dbg["groq_model"], dbg["groq_fallback"] = res["model"], res["fallback"]
         else:
-            dbg["notes"].append("Groq unavailable → deterministic rules: " + "; ".join(res["errors"])[:300])
+            dbg["ai_code"] = res.get("code")
+            dbg["notes"].append("Groq unavailable → deterministic rules: " + groq_client.MESSAGES.get(res.get("code"), ""))
+            dbg["notes_tech"] = "; ".join(res["errors"])[:300]
     else:
         dbg["notes"].append("No Groq key configured → deterministic energy-audit rules used.")
     yield done(4, t0, (f"Groq · {strategist['model']}" + (" (fallback)" if strategist["fallback"] else "")) if strategist["source"] == "groq"
@@ -230,7 +231,7 @@ async def run_pipeline(body: dict):
         "schedule": rep["schedule"], "per_appliance": rep["per_appliance"], "scenarios": scenarios, "benchmark": bench,
         "strategist": strategist, "debug": dbg,
     }
-    fid = db.save_forecast(data)
+    fid = db.save_forecast(data, tid)
     data["id"] = fid
     dbg["total_ms"] = _ms(total_t0)
     yield done(5, t0, f"Saved forecast #{fid} to smart_energy.db")

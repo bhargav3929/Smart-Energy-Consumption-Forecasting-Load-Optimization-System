@@ -1,0 +1,471 @@
+{
+ "created_at": 1795186699.6741102,
+ "title": "Campus Lab & Hostel · Bengaluru",
+ "generated": "20 Nov 2026, 20:28",
+ "city": {
+  "name": "Bengaluru",
+  "admin1": "Karnataka",
+  "country": "India",
+  "country_code": "IN",
+  "lat": 12.97194,
+  "lon": 77.59369,
+  "timezone": "Asia/Kolkata"
+ },
+ "currency": "₹",
+ "tariff": {
+  "label": "India tiered + ToU (illustrative)",
+  "slabs": [
+   [
+    100,
+    3.5
+   ],
+   [
+    200,
+    5.0
+   ],
+   [
+    400,
+    7.0
+   ],
+   [
+    null,
+    8.5
+   ]
+  ],
+  "peak_surcharge": 3.0,
+  "off_discount": 1.5,
+  "fixed": 120.0,
+  "co2_kg_per_kwh": 0.82
+ },
+ "appliances": [
+  {
+   "name": "45 Lab Workstations (120 W each)",
+   "watts": 5400.0,
+   "hours_per_day": 9.0,
+   "peak_hour": 9,
+   "shiftable": false
+  },
+  {
+   "name": "Central HVAC",
+   "watts": 9000.0,
+   "hours_per_day": 10.0,
+   "peak_hour": 9,
+   "shiftable": false
+  },
+  {
+   "name": "Hostel Water Heaters",
+   "watts": 12000.0,
+   "hours_per_day": 3.0,
+   "peak_hour": 18,
+   "shiftable": true
+  },
+  {
+   "name": "Lab & Hostel Lighting",
+   "watts": 3000.0,
+   "hours_per_day": 12.0,
+   "peak_hour": 17,
+   "shiftable": false
+  },
+  {
+   "name": "Water Pump",
+   "watts": 1500.0,
+   "hours_per_day": 2.0,
+   "peak_hour": 18,
+   "shiftable": true
+  },
+  {
+   "name": "Network & Server Rack",
+   "watts": 800.0,
+   "hours_per_day": 24.0,
+   "peak_hour": 0,
+   "shiftable": false
+  }
+ ],
+ "weather": {
+  "cooling": 0.918,
+  "heating": 1.0,
+  "avg_temp": 23.5,
+  "max_temp": 30.0,
+  "min_temp": 18.2,
+  "avg_solar": 487.0,
+  "daily": [
+   {
+    "date": "2026-11-20",
+    "avg": 23.8,
+    "max": 29.0,
+    "min": 18.5
+   },
+   {
+    "date": "2026-11-21",
+    "avg": 24.0,
+    "max": 29.4,
+    "min": 18.2
+   },
+   {
+    "date": "2026-11-22",
+    "avg": 24.1,
+    "max": 29.7,
+    "min": 18.5
+   },
+   {
+    "date": "2026-11-23",
+    "avg": 24.2,
+    "max": 30.0,
+    "min": 18.7
+   },
+   {
+    "date": "2026-11-24",
+    "avg": 23.2,
+    "max": 27.9,
+    "min": 20.9
+   },
+   {
+    "date": "2026-11-25",
+    "avg": 22.6,
+    "max": 26.8,
+    "min": 20.6
+   },
+   {
+    "date": "2026-11-26",
+    "avg": 22.3,
+    "max": 26.2,
+    "min": 19.8
+   }
+  ],
+  "cooling_degree_factor": 0.918,
+  "source": "open-meteo"
+ },
+ "energy": {
+  "daily_kwh_baseline": 225.42,
+  "daily_kwh_optimized": 225.45,
+  "month_kwh": 6762.6,
+  "month_kwh_optimized": 6763.6,
+  "bill_baseline": 60242.9,
+  "bill_optimized": 54927.84,
+  "bill_breakdown_baseline": {
+   "energy": 56332.1,
+   "tou": 3790.8,
+   "fixed": 120.0,
+   "total": 60242.9
+  },
+  "bill_breakdown_optimized": {
+   "energy": 56340.36,
+   "tou": -1532.52,
+   "fixed": 120.0,
+   "total": 54927.84
+  },
+  "savings_month": 5315.06,
+  "savings_pct": 8.8,
+  "peak_kw_before": 18.92,
+  "peak_kw_after": 18.54,
+  "peak_shaved_kw": 0.38,
+  "peak_reduction_pct": 2.0,
+  "peak_window_kwh_before": 55.82,
+  "peak_window_kwh_after": 16.17,
+  "co2_before_kg": 5752.6,
+  "co2_after_kg": 5462.4,
+  "co2_saved_kg": 290.2,
+  "baseline_curve": [
+   3.8,
+   3.8,
+   3.8,
+   3.8,
+   3.8,
+   0.8,
+   0.8,
+   0.8,
+   0.8,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   18.2,
+   18.92,
+   17.3,
+   15.8,
+   3.8,
+   3.8,
+   3.8
+  ],
+  "optimized_curve": [
+   15.8,
+   3.8,
+   3.8,
+   3.8,
+   3.8,
+   0.8,
+   0.8,
+   0.8,
+   0.8,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.2,
+   15.54,
+   18.54,
+   5.258,
+   3.638,
+   3.638,
+   3.638,
+   17.3,
+   17.3
+  ],
+  "daily_kwh_unadjusted": 232.8,
+  "month_kwh_unadjusted": 6984.0,
+  "bill_unadjusted": 62789.0,
+  "weather_extra_kwh_month": -221.4,
+  "weather_extra_cost_month": -2546.1
+ },
+ "schedule": [
+  {
+   "appliance": "Central HVAC",
+   "watts": 9000.0,
+   "kind": "cooling",
+   "action": "precool",
+   "hours": 9.18,
+   "original_window": "09:00–19:00",
+   "new_window": "16:00–18:00 pre-cool + reduced peak run",
+   "daily_kwh": 82.62,
+   "peak_kwh_day": 1.62,
+   "monthly_saving": 58.32,
+   "note": ""
+  },
+  {
+   "appliance": "45 Lab Workstations (120 W each)",
+   "watts": 5400.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 9.0,
+   "original_window": "09:00–18:00",
+   "new_window": "09:00–18:00",
+   "daily_kwh": 48.6,
+   "peak_kwh_day": 0.0,
+   "monthly_saving": 0.0,
+   "note": "Not in peak window"
+  },
+  {
+   "appliance": "Hostel Water Heaters",
+   "watts": 12000.0,
+   "kind": "heating",
+   "action": "shift",
+   "hours": 3.0,
+   "original_window": "18:00–21:00",
+   "new_window": "22:00–01:00",
+   "daily_kwh": 36.0,
+   "peak_kwh_day": 36.0,
+   "monthly_saving": 4860.0,
+   "note": ""
+  },
+  {
+   "appliance": "Lab & Hostel Lighting",
+   "watts": 3000.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 12.0,
+   "original_window": "17:00–05:00",
+   "new_window": "17:00–05:00",
+   "daily_kwh": 36.0,
+   "peak_kwh_day": 12.0,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Network & Server Rack",
+   "watts": 800.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 24.0,
+   "original_window": "24h (always-on)",
+   "new_window": "24h (always-on)",
+   "daily_kwh": 19.2,
+   "peak_kwh_day": 3.2,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Water Pump",
+   "watts": 1500.0,
+   "kind": "base",
+   "action": "shift",
+   "hours": 2.0,
+   "original_window": "18:00–20:00",
+   "new_window": "22:00–00:00",
+   "daily_kwh": 3.0,
+   "peak_kwh_day": 3.0,
+   "monthly_saving": 405.0,
+   "note": ""
+  }
+ ],
+ "per_appliance": [
+  {
+   "name": "Central HVAC",
+   "kwh_day": 82.62,
+   "share_pct": 36.7
+  },
+  {
+   "name": "45 Lab Workstations (120 W each)",
+   "kwh_day": 48.6,
+   "share_pct": 21.6
+  },
+  {
+   "name": "Hostel Water Heaters",
+   "kwh_day": 36.0,
+   "share_pct": 16.0
+  },
+  {
+   "name": "Lab & Hostel Lighting",
+   "kwh_day": 36.0,
+   "share_pct": 16.0
+  },
+  {
+   "name": "Network & Server Rack",
+   "kwh_day": 19.2,
+   "share_pct": 8.5
+  },
+  {
+   "name": "Water Pump",
+   "kwh_day": 3.0,
+   "share_pct": 1.3
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Baseline (as logged)",
+   "daily_kwh": 225.42,
+   "peak_kw": 18.92,
+   "bill": 60242.9,
+   "co2_kg": 5752.6,
+   "savings": 0.0,
+   "savings_pct": 0.0
+  },
+  {
+   "name": "Load-shifted schedule",
+   "daily_kwh": 225.45,
+   "peak_kw": 18.54,
+   "bill": 54927.84,
+   "co2_kg": 5462.4,
+   "savings": 5315.06,
+   "savings_pct": 8.8
+  },
+  {
+   "name": "Shifted + thermostat +2 °C",
+   "daily_kwh": 215.51,
+   "peak_kw": 15.8,
+   "bill": 52303.93,
+   "co2_kg": 5212.9,
+   "savings": 7938.97,
+   "savings_pct": 13.2
+  }
+ ],
+ "benchmark": [
+  {
+   "name": "3BHK Household",
+   "daily_kwh": 31.52,
+   "bill": 7849.61,
+   "peak_kw": 5.88,
+   "savings_pct": 16.7
+  },
+  {
+   "name": "Campus Lab & Hostel",
+   "daily_kwh": 225.42,
+   "bill": 60242.9,
+   "peak_kw": 18.92,
+   "savings_pct": 8.8
+  },
+  {
+   "name": "2BHK Summer Peak",
+   "daily_kwh": 29.46,
+   "bill": 6732.48,
+   "peak_kw": 3.88,
+   "savings_pct": 4.7
+  },
+  {
+   "name": "Clinic & Pharmacy",
+   "daily_kwh": 84.3,
+   "bill": 21328.39,
+   "peak_kw": 10.2,
+   "savings_pct": 4.7
+  }
+ ],
+ "strategist": {
+  "summary": "Shifting flexible loads cuts peak demand by 2.0% (0.38 kW) and saves about ₹5,315 per month with roughly 290.2 kg CO₂ avoided.",
+  "actions": [
+   {
+    "appliance": "Central HVAC",
+    "action": "Pre-cool 16:00–18:00, then raise set-point during peak",
+    "reason": "Thermal mass of the room carries the comfort through the expensive evening hours."
+   },
+   {
+    "appliance": "Hostel Water Heaters",
+    "action": "Run 22:00–01:00 instead of 18:00–21:00",
+    "reason": "Moves 36.0 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹4860/month."
+   },
+   {
+    "appliance": "Water Pump",
+    "action": "Run 22:00–00:00 instead of 18:00–20:00",
+    "reason": "Moves 3.0 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹405/month."
+   }
+  ],
+  "thermostat": [
+   "Weather is mild: use fans or natural ventilation before running HVAC.",
+   "Pre-cool to ~23 °C between 16:00 and 18:00, then let it drift up to 26 °C during 18:00–22:00.",
+   "Keep refrigeration doors sealed and defrost regularly to hold compressor duty low."
+  ],
+  "tips": [
+   "Run EV chargers, washing machines, geysers and pumps after 22:00 on a timer or smart plug.",
+   "Stagger high-wattage loads so they never start at the same minute (lowers peak kW).",
+   "Cook with lids on and batch microwave/induction use outside 18:00–22:00 where possible.",
+   "Check your tariff slab each month; trimming a few kWh can drop you into a cheaper tier."
+  ],
+  "source": "rules",
+  "model": null,
+  "fallback": false
+ },
+ "debug": {
+  "run_id": "d6558eac",
+  "nodes": [
+   {
+    "id": 1,
+    "name": "Appliance Log & City Gatekeeper",
+    "ms": 764
+   },
+   {
+    "id": 2,
+    "name": "7-Day Weather & Cooling/Heating Telemetry",
+    "ms": 781
+   },
+   {
+    "id": 3,
+    "name": "Monthly Bill & Peak-Load Shaving Engine",
+    "ms": 3
+   },
+   {
+    "id": 4,
+    "name": "Groq Load-Optimization Strategist",
+    "ms": 0
+   },
+   {
+    "id": 5,
+    "name": "Report & SQLite Persistence",
+    "ms": 5
+   }
+  ],
+  "geocode_ms": 764,
+  "weather_ms": 780,
+  "groq_ms": null,
+  "groq_model": null,
+  "groq_fallback": false,
+  "weather_source": "open-meteo",
+  "notes": [
+   "No Groq key configured → deterministic energy-audit rules used."
+  ],
+  "total_ms": 1553
+ }
+}

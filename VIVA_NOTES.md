@@ -62,3 +62,13 @@ Each pipeline step sends a JSON line as soon as it finishes, so the UI shows liv
 
 **10. What are the limitations?**
 Tariffs are illustrative, not real utility rates; usage is modeled as steady daily patterns; the weather effect is a simple linear factor; the CO₂ peak/off-peak multipliers are assumptions. Outputs are educational estimates, not financial advice.
+
+## 4. Standard project contract (added)
+- **Settings** live in `.env` (template: `.env.example`, read by `app/config.py`): port `8005` (= 8000 + project number 5), Groq models, upload limit. Every setting has a default in code.
+- **Standard routes:** `GET /health`, `GET /api/info`, `GET /api/samples`, `GET /api/samples/{id}` (saved result, instant, no AI call), `GET/POST /api/keys`, `DELETE /api/keys/groq`. Errors are always `{"error": "...", "code": "..."}`.
+- **Groq only:** `app/groq_client.py` has timeouts, up to 3 attempts per model with exponential backoff on 429/5xx/timeouts, a fallback model (`GROQ_FALLBACK_MODEL`) and plain-English errors. A key must start with `gsk_` and not be the placeholder; otherwise the app treats it as "no key" and uses the deterministic rules.
+- **Key safety:** keys can only be saved from the same machine (no `X-Forwarded-For`), and the full key is never sent back to the browser (masked `gsk_…abcd`).
+- **Samples:** `samples/*.csv` are the four presets; `samples/results/*.json` are saved outputs of real pipeline runs (`scripts/generate_samples.py`). Re-run that script with a Groq key saved to refresh them with AI advice.
+- **Hourly limit:** the 15 forecasts/hour sliding window stays; failed runs are refunded.
+- **Windows safety:** the server runs through `python -m uvicorn`, and all dependencies are pure Python (no blocked compiled DLLs).
+- **Hosted-demo support:** the same code can run behind a signed-ticket gate (`app/tickets.py`) with per-ticket run counts and 24-hour private history. It is off by default and not needed for the student version.

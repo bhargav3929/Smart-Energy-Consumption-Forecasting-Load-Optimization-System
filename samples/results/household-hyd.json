@@ -1,0 +1,476 @@
+{
+ "created_at": 1795186698.1048443,
+ "title": "3BHK Household · Hyderabad",
+ "generated": "20 Nov 2026, 20:28",
+ "city": {
+  "name": "Hyderabad",
+  "admin1": "Telangana",
+  "country": "India",
+  "country_code": "IN",
+  "lat": 17.38405,
+  "lon": 78.45636,
+  "timezone": "Asia/Kolkata"
+ },
+ "currency": "₹",
+ "tariff": {
+  "label": "India tiered + ToU (illustrative)",
+  "slabs": [
+   [
+    100,
+    3.5
+   ],
+   [
+    200,
+    5.0
+   ],
+   [
+    400,
+    7.0
+   ],
+   [
+    null,
+    8.5
+   ]
+  ],
+  "peak_surcharge": 3.0,
+  "off_discount": 1.5,
+  "fixed": 120.0,
+  "co2_kg_per_kwh": 0.82
+ },
+ "appliances": [
+  {
+   "name": "Air Conditioner (1.5 ton)",
+   "watts": 1500.0,
+   "hours_per_day": 8.0,
+   "peak_hour": 21,
+   "shiftable": false
+  },
+  {
+   "name": "Geyser (Water Heater)",
+   "watts": 2000.0,
+   "hours_per_day": 1.5,
+   "peak_hour": 19,
+   "shiftable": true
+  },
+  {
+   "name": "EV Charger (3.3 kW)",
+   "watts": 3300.0,
+   "hours_per_day": 4.0,
+   "peak_hour": 19,
+   "shiftable": true
+  },
+  {
+   "name": "Refrigerator",
+   "watts": 75.0,
+   "hours_per_day": 24.0,
+   "peak_hour": 0,
+   "shiftable": false
+  },
+  {
+   "name": "Washing Machine",
+   "watts": 500.0,
+   "hours_per_day": 1.5,
+   "peak_hour": 18,
+   "shiftable": true
+  },
+  {
+   "name": "Fans & Lighting",
+   "watts": 250.0,
+   "hours_per_day": 7.0,
+   "peak_hour": 18,
+   "shiftable": false
+  }
+ ],
+ "weather": {
+  "cooling": 1.041,
+  "heating": 1.0,
+  "avg_temp": 25.6,
+  "max_temp": 31.4,
+  "min_temp": 18.5,
+  "avg_solar": 448.0,
+  "daily": [
+   {
+    "date": "2026-11-20",
+    "avg": 24.3,
+    "max": 29.6,
+    "min": 18.5
+   },
+   {
+    "date": "2026-11-21",
+    "avg": 26.1,
+    "max": 30.5,
+    "min": 21.1
+   },
+   {
+    "date": "2026-11-22",
+    "avg": 26.1,
+    "max": 31.4,
+    "min": 20.6
+   },
+   {
+    "date": "2026-11-23",
+    "avg": 26.3,
+    "max": 31.3,
+    "min": 21.4
+   },
+   {
+    "date": "2026-11-24",
+    "avg": 26.4,
+    "max": 30.8,
+    "min": 22.2
+   },
+   {
+    "date": "2026-11-25",
+    "avg": 24.8,
+    "max": 29.4,
+    "min": 22.1
+   },
+   {
+    "date": "2026-11-26",
+    "avg": 24.9,
+    "max": 28.4,
+    "min": 21.2
+   }
+  ],
+  "cooling_degree_factor": 1.041,
+  "source": "open-meteo"
+ },
+ "energy": {
+  "daily_kwh_baseline": 32.99,
+  "daily_kwh_optimized": 33.02,
+  "month_kwh": 989.8,
+  "month_kwh_optimized": 990.7,
+  "bill_baseline": 8159.57,
+  "bill_optimized": 6909.47,
+  "bill_breakdown_baseline": {
+   "energy": 7262.96,
+   "tou": 776.61,
+   "fixed": 120.0,
+   "total": 8159.57
+  },
+  "bill_breakdown_optimized": {
+   "energy": 7270.61,
+   "tou": -481.14,
+   "fixed": 120.0,
+   "total": 6909.47
+  },
+  "savings_month": 1250.1,
+  "savings_pct": 15.3,
+  "peak_kw_before": 5.88,
+  "peak_kw_after": 3.69,
+  "peak_shaved_kw": 2.19,
+  "peak_reduction_pct": 37.2,
+  "peak_window_kwh_before": 16.45,
+  "peak_window_kwh_after": 2.2,
+  "co2_before_kg": 854.1,
+  "co2_after_kg": 786.0,
+  "co2_saved_kg": 68.0,
+  "baseline_curve": [
+   1.825,
+   1.575,
+   1.575,
+   1.575,
+   1.575,
+   0.567,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.825,
+   5.875,
+   4.625,
+   5.125,
+   5.125,
+   1.825
+  ],
+  "optimized_curve": [
+   1.825,
+   1.575,
+   1.575,
+   1.575,
+   1.575,
+   2.567,
+   1.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   0.075,
+   3.375,
+   3.375,
+   3.69,
+   3.69,
+   0.175,
+   0.175,
+   0.175,
+   1.675,
+   2.325,
+   2.075
+  ],
+  "daily_kwh_unadjusted": 32.5,
+  "month_kwh_unadjusted": 975.0,
+  "bill_unadjusted": 8056.25,
+  "weather_extra_kwh_month": 14.8,
+  "weather_extra_cost_month": 103.32
+ },
+ "schedule": [
+  {
+   "appliance": "EV Charger (3.3 kW)",
+   "watts": 3300.0,
+   "kind": "base",
+   "action": "shift",
+   "hours": 4.0,
+   "original_window": "19:00–23:00",
+   "new_window": "14:00–18:00",
+   "daily_kwh": 13.2,
+   "peak_kwh_day": 9.9,
+   "monthly_saving": 742.5,
+   "note": ""
+  },
+  {
+   "appliance": "Air Conditioner (1.5 ton)",
+   "watts": 1500.0,
+   "kind": "cooling",
+   "action": "precool",
+   "hours": 8.33,
+   "original_window": "21:00–06:00",
+   "new_window": "16:00–18:00 pre-cool + reduced peak run",
+   "daily_kwh": 12.49,
+   "peak_kwh_day": 1.5,
+   "monthly_saving": 54.0,
+   "note": ""
+  },
+  {
+   "appliance": "Geyser (Water Heater)",
+   "watts": 2000.0,
+   "kind": "heating",
+   "action": "shift",
+   "hours": 1.5,
+   "original_window": "19:00–21:00",
+   "new_window": "05:00–07:00",
+   "daily_kwh": 3.0,
+   "peak_kwh_day": 3.0,
+   "monthly_saving": 360.0,
+   "note": ""
+  },
+  {
+   "appliance": "Refrigerator",
+   "watts": 75.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 24.0,
+   "original_window": "24h (always-on)",
+   "new_window": "24h (always-on)",
+   "daily_kwh": 1.8,
+   "peak_kwh_day": 0.3,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Fans & Lighting",
+   "watts": 250.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 7.0,
+   "original_window": "18:00–01:00",
+   "new_window": "18:00–01:00",
+   "daily_kwh": 1.75,
+   "peak_kwh_day": 1.0,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Washing Machine",
+   "watts": 500.0,
+   "kind": "base",
+   "action": "shift",
+   "hours": 1.5,
+   "original_window": "18:00–20:00",
+   "new_window": "22:00–00:00",
+   "daily_kwh": 0.75,
+   "peak_kwh_day": 0.75,
+   "monthly_saving": 101.25,
+   "note": ""
+  }
+ ],
+ "per_appliance": [
+  {
+   "name": "EV Charger (3.3 kW)",
+   "kwh_day": 13.2,
+   "share_pct": 40.0
+  },
+  {
+   "name": "Air Conditioner (1.5 ton)",
+   "kwh_day": 12.49,
+   "share_pct": 37.9
+  },
+  {
+   "name": "Geyser (Water Heater)",
+   "kwh_day": 3.0,
+   "share_pct": 9.1
+  },
+  {
+   "name": "Refrigerator",
+   "kwh_day": 1.8,
+   "share_pct": 5.5
+  },
+  {
+   "name": "Fans & Lighting",
+   "kwh_day": 1.75,
+   "share_pct": 5.3
+  },
+  {
+   "name": "Washing Machine",
+   "kwh_day": 0.75,
+   "share_pct": 2.3
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Baseline (as logged)",
+   "daily_kwh": 32.99,
+   "peak_kw": 5.88,
+   "bill": 8159.57,
+   "co2_kg": 854.1,
+   "savings": 0.0,
+   "savings_pct": 0.0
+  },
+  {
+   "name": "Load-shifted schedule",
+   "daily_kwh": 33.02,
+   "peak_kw": 3.69,
+   "bill": 6909.47,
+   "co2_kg": 786.0,
+   "savings": 1250.1,
+   "savings_pct": 15.3
+  },
+  {
+   "name": "Shifted + thermostat +2 °C",
+   "daily_kwh": 31.52,
+   "peak_kw": 3.38,
+   "bill": 6536.17,
+   "co2_kg": 749.7,
+   "savings": 1623.4,
+   "savings_pct": 19.9
+  }
+ ],
+ "benchmark": [
+  {
+   "name": "3BHK Household",
+   "daily_kwh": 32.99,
+   "bill": 8159.57,
+   "peak_kw": 5.88,
+   "savings_pct": 15.3
+  },
+  {
+   "name": "Campus Lab & Hostel",
+   "daily_kwh": 236.49,
+   "bill": 64062.05,
+   "peak_kw": 26.3,
+   "savings_pct": 8.8
+  },
+  {
+   "name": "2BHK Summer Peak",
+   "daily_kwh": 32.43,
+   "bill": 7384.13,
+   "peak_kw": 3.88,
+   "savings_pct": 4.3
+  },
+  {
+   "name": "Clinic & Pharmacy",
+   "daily_kwh": 91.45,
+   "bill": 23744.98,
+   "peak_kw": 11.7,
+   "savings_pct": 5.1
+  }
+ ],
+ "strategist": {
+  "summary": "Shifting flexible loads cuts peak demand by 37.2% (2.19 kW) and saves about ₹1,250 per month with roughly 68.0 kg CO₂ avoided.",
+  "actions": [
+   {
+    "appliance": "EV Charger (3.3 kW)",
+    "action": "Run 14:00–18:00 instead of 19:00–23:00",
+    "reason": "Moves 9.9 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹742/month."
+   },
+   {
+    "appliance": "Air Conditioner (1.5 ton)",
+    "action": "Pre-cool 16:00–18:00, then raise set-point during peak",
+    "reason": "Thermal mass of the room carries the comfort through the expensive evening hours."
+   },
+   {
+    "appliance": "Geyser (Water Heater)",
+    "action": "Run 05:00–07:00 instead of 19:00–21:00",
+    "reason": "Moves 3.0 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹360/month."
+   },
+   {
+    "appliance": "Washing Machine",
+    "action": "Run 22:00–00:00 instead of 18:00–20:00",
+    "reason": "Moves 0.75 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹101/month."
+   }
+  ],
+  "thermostat": [
+   "Weather is mild: use fans or natural ventilation before running HVAC.",
+   "Pre-cool to ~23 °C between 16:00 and 18:00, then let it drift up to 26 °C during 18:00–22:00.",
+   "Keep refrigeration doors sealed and defrost regularly to hold compressor duty low."
+  ],
+  "tips": [
+   "Run EV chargers, washing machines, geysers and pumps after 22:00 on a timer or smart plug.",
+   "Stagger high-wattage loads so they never start at the same minute (lowers peak kW).",
+   "Cook with lids on and batch microwave/induction use outside 18:00–22:00 where possible.",
+   "Check your tariff slab each month; trimming a few kWh can drop you into a cheaper tier."
+  ],
+  "source": "rules",
+  "model": null,
+  "fallback": false
+ },
+ "debug": {
+  "run_id": "ac6478c4",
+  "nodes": [
+   {
+    "id": 1,
+    "name": "Appliance Log & City Gatekeeper",
+    "ms": 880
+   },
+   {
+    "id": 2,
+    "name": "7-Day Weather & Cooling/Heating Telemetry",
+    "ms": 755
+   },
+   {
+    "id": 3,
+    "name": "Monthly Bill & Peak-Load Shaving Engine",
+    "ms": 2
+   },
+   {
+    "id": 4,
+    "name": "Groq Load-Optimization Strategist",
+    "ms": 0
+   },
+   {
+    "id": 5,
+    "name": "Report & SQLite Persistence",
+    "ms": 17
+   }
+  ],
+  "geocode_ms": 880,
+  "weather_ms": 755,
+  "groq_ms": null,
+  "groq_model": null,
+  "groq_fallback": false,
+  "weather_source": "open-meteo",
+  "notes": [
+   "No Groq key configured → deterministic energy-audit rules used."
+  ],
+  "total_ms": 1655
+ }
+}

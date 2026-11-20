@@ -2,35 +2,37 @@
 import csv
 import io
 import json
-import os
+import logging
 from pathlib import Path
 
-from dotenv import load_dotenv
 from starlette.applications import Starlette
 from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
-load_dotenv()
-
-from . import db, energy, groq_client  # noqa: E402
+from . import config, db, energy, groq_client, tickets  # noqa: E402
 from .pipeline import run_pipeline  # noqa: E402
 from .presets import PRESETS  # noqa: E402
 
-os.environ.setdefault("PORT", "8005")  # dedicated port for this project
-HOST, PORT = "127.0.0.1", 8005
+log = logging.getLogger("smart_energy")
+ROOT = Path(__file__).resolve().parent.parent
 STATIC = Path(__file__).parent / "static"
+SAMPLES = ROOT / "samples"
+TICKET_HEADER = "X-LastSem-Ticket"
 
 db.init()
+db.purge_demo()
+if config.DEMO_MODE and not config.DEMO_TICKET_SECRET:
+    log.warning("DEMO_MODE is on but DEMO_TICKET_SECRET is empty: every ticket will be treated as invalid.")
+
+
+# ---------- helpers ----------
+def err(message: str, code: str, status: int, **extra):
+    return JSONResponse({"error": message, "code": code, **extra}, status_code=status)
 
 
 def _mask(k: str) -> str:
-    return (k[:4] + "…" + k[-4:]) if len(k) > 10 else ("•" * len(k))
-
-
-def _status_payload():
-    key, src = db.get_groq_key()
-    return {"quota": db.quota_status(), "has_key": bool(key), "key_source": src, "key_masked": _mask(key) if key else ""}
+    return ("gsk_…" + k[-4:]) if k else ""
 
 
 async def _json_body(request):
@@ -41,39 +43,155 @@ async def _json_body(request):
         return {}
 
 
+def _key():
+    return db.get_groq_key(demo=config.DEMO_MODE)
+
+
+def _check_ticket(request):
+    """Returns (payload, None) or (None, error response). Only used in demo mode."""
+    payload, code = tickets.verify_ticket(request.headers.get(TICKET_HEADER), config.DEMO_TICKET_SECRET, config.PROJECT_SLUG)
+    if code:
+        msgs = {
+            "TICKET_REQUIRED": "Sign in on lastsem.com to try your own input.",
+            "TICKET_INVALID": "This demo ticket isn't valid. Go back to lastsem.com and start again.",
+            "TICKET_EXPIRED": "This demo ticket has expired. Go back to lastsem.com for a new one.",
+        }
+        return None, err(msgs[code], code, 401)
+    return payload, None
+
+
+def _tid(request) -> str:
+    """Visitor id for history: the ticket id in demo mode, '' for the download version."""
+    if not config.DEMO_MODE:
+        return ""
+    payload, _ = tickets.verify_ticket(request.headers.get(TICKET_HEADER), config.DEMO_TICKET_SECRET, config.PROJECT_SLUG)
+    return payload["tid"] if payload else "-"  # '-' matches no stored history
+
+
+def _is_local_request(request) -> bool:
+    host = request.client.host if request.client else ""
+    if host not in ("127.0.0.1", "::1", "localhost"):
+        return False
+    return "x-forwarded-for" not in request.headers and "forwarded" not in request.headers
+
+
+def _keys_guard(request, change: bool):
+    if config.DEMO_MODE:
+        return err("Not found.", "NOT_FOUND", 404)
+    if change and not _is_local_request(request):
+        return err("API keys can only be changed from the machine running the app.", "KEYS_LOCAL_ONLY", 403)
+    return None
+
+
+def _quota_payload():
+    return db.quota_status()
+
+
+# ---------- pages & standard routes ----------
 async def index(request):
     return FileResponse(STATIC / "index.html")
 
 
-async def status(request):
-    return JSONResponse(_status_payload())
+async def health(request):
+    return JSONResponse({"status": "ok"})
+
+
+async def info(request):
+    key, _src = _key()
+    demo = None
+    max_mb = config.DEMO_MAX_UPLOAD_MB if config.DEMO_MODE else config.MAX_UPLOAD_MB
+    if config.DEMO_MODE:
+        payload, _ = tickets.verify_ticket(request.headers.get(TICKET_HEADER), config.DEMO_TICKET_SECRET, config.PROJECT_SLUG)
+        left = max(0, int(payload.get("runs", 0)) - db.ticket_runs_used(payload["tid"])) if payload else 0
+        demo = {"ticket_valid": bool(payload), "runs_left": left, "daily_cap_reached": db.daily_runs_used() >= config.DEMO_DAILY_CAP}
+    return JSONResponse({
+        "name": config.PROJECT_NAME, "slug": config.PROJECT_SLUG, "number": config.PROJECT_NUMBER, "version": config.VERSION,
+        "mode": "demo" if config.DEMO_MODE else "local",
+        "ai": {"provider": "groq", "ready": bool(key), "model": config.GROQ_MODEL},
+        "limits": {"max_upload_mb": max_mb, "forecasts_per_hour": db.RATE_LIMIT, **_quota_payload()},
+        "demo": demo,
+    })
+
+
+def _sample_list():
+    out = []
+    for p in PRESETS:
+        out.append({"id": p["id"], "title": p["title"], "input_url": f"samples/{p['id']}.csv", "city": p["city"],
+                    "has_saved_result": (SAMPLES / "results" / f"{p['id']}.json").is_file()})
+    return out
+
+
+async def samples(request):
+    return JSONResponse({"samples": _sample_list()})
+
+
+async def sample_one(request):
+    sid = request.path_params["sid"]
+    item = next((s for s in _sample_list() if s["id"] == sid), None)
+    if not item:
+        return err("That sample doesn't exist.", "NOT_FOUND", 404)
+    f = SAMPLES / "results" / f"{sid}.json"
+    result = json.loads(f.read_text(encoding="utf-8")) if f.is_file() else None
+    return JSONResponse({"id": sid, "title": item["title"], "input_url": item["input_url"], "result": result})
 
 
 async def presets(request):
     return JSONResponse(PRESETS)
 
 
-async def save_settings(request):
+# ---------- keys (download version only) ----------
+async def keys_get(request):
+    if (g := _keys_guard(request, change=False)):
+        return g
+    key, src = _key()
+    return JSONResponse({"groq": {"configured": bool(key), "source": src, "masked": _mask(key)}})
+
+
+async def keys_post(request):
+    if (g := _keys_guard(request, change=True)):
+        return g
     body = await _json_body(request)
     key = str(body.get("groq_api_key", "")).strip()
-    if key and not key.startswith("gsk_"):
-        return JSONResponse({"ok": False, "message": "Groq keys start with gsk_"}, status_code=400)
+    if not config.usable_key(key):
+        return err("That doesn't look like a Groq key. Keys start with gsk_ and have no spaces.", "BAD_INPUT", 400)
     db.set_setting("GROQ_API_KEY", key)
-    return JSONResponse({"ok": True, **_status_payload()})
+    return JSONResponse({"saved": ["groq"]})
 
 
-async def test_key(request):
+async def keys_delete(request):
+    if (g := _keys_guard(request, change=True)):
+        return g
+    db.set_setting("GROQ_API_KEY", "")
+    return JSONResponse({"removed": "groq"})
+
+
+async def keys_test(request):
+    if (g := _keys_guard(request, change=True)):
+        return g
     body = await _json_body(request)
-    key = str(body.get("groq_api_key", "")).strip() or db.get_groq_key()[0]
+    key = str(body.get("groq_api_key", "")).strip() or _key()[0]
     return JSONResponse(await groq_client.test_key(key))
+
+
+# ---------- feature routes ----------
+async def status(request):
+    key, src = _key()
+    return JSONResponse({"quota": _quota_payload(), "has_key": bool(key), "key_source": src, "key_masked": _mask(key),
+                         "demo_mode": config.DEMO_MODE})
 
 
 async def parse_log(request):
     form = await request.form()
     upload = form.get("file")
     if upload is None or not hasattr(upload, "read"):
-        return JSONResponse({"detail": "No file uploaded."}, status_code=400)
-    raw = (await upload.read())[:512_000]
+        return err("Choose a CSV or JSON file to upload.", "BAD_INPUT", 400)
+    limit_mb = config.DEMO_MAX_UPLOAD_MB if config.DEMO_MODE else config.MAX_UPLOAD_MB
+    raw = await upload.read()
+    if len(raw) > limit_mb * 1024 * 1024:
+        return err(f"That file is larger than {limit_mb} MB.", "TOO_LARGE", 413)
+    name = (getattr(upload, "filename", "") or "").lower()
+    if name and not name.endswith((".csv", ".json", ".txt")):
+        return err("Upload a .csv or .json file.", "BAD_INPUT", 400)
     text = raw.decode("utf-8-sig", errors="replace").strip()
     try:
         if text[:1] in "[{":
@@ -82,7 +200,7 @@ async def parse_log(request):
         else:
             rows = list(csv.DictReader(io.StringIO(text)))
     except Exception as e:
-        return JSONResponse({"detail": f"Could not parse file: {e}"}, status_code=400)
+        return err(f"Could not parse file: {e}", "BAD_INPUT", 400)
     norm = []
     for r in rows if isinstance(rows, list) else []:
         if isinstance(r, dict):
@@ -92,36 +210,56 @@ async def parse_log(request):
                          "peak_hour": r.get("peak_hour", 18), "shiftable": r.get("shiftable", False)})
     clean, errors = energy.normalize_rows(norm)
     if errors and not clean:
-        return JSONResponse({"detail": " ".join(errors)}, status_code=400)
+        return err(" ".join(errors), "BAD_INPUT", 400)
     return JSONResponse({"appliances": clean, "warnings": errors})
 
 
 async def forecast(request):
     body = await _json_body(request)
+    ticket_payload = None
+    if config.DEMO_MODE:
+        ticket_payload, bad = _check_ticket(request)
+        if bad:
+            return bad
+        tid = ticket_payload["tid"]
+        if db.ticket_runs_used(tid) >= int(ticket_payload.get("runs", 0)):
+            return err("The live runs on this demo ticket are used up. Buy the project to run it without limits.", "TICKET_USED_UP", 429)
+        if db.daily_runs_used() >= config.DEMO_DAILY_CAP:
+            return err("The demo has reached its daily limit. Please try again tomorrow.", "DAILY_CAP_REACHED", 429)
+    tid = ticket_payload["tid"] if ticket_payload else ""
+
     ticket = db.consume()
     if ticket is None:
         q = db.quota_status()
-        return JSONResponse({"error": f"Hourly limit reached (15/15 used). Resets in {q['reset_in'] // 60 + 1} min.", "quota": q},
-                            status_code=429)
+        return err(f"Hourly limit reached (15/15 used). Resets in {q['reset_in'] // 60 + 1} min.", "RATE_LIMITED", 429, quota=q)
+
+    key, _src = _key()
 
     async def gen():
         try:
-            async for ev in run_pipeline(body):
-                if ev["type"] == "error" and ev.get("refund"):
-                    db.refund(ticket)
+            async for ev in run_pipeline(body, key, tid):
+                if ev["type"] == "error":
+                    if ev.get("refund"):
+                        db.refund(ticket)
+                    ev["error"] = ev["message"]
+                    ev["code"] = "BAD_INPUT" if ev.get("refund") else "AI_FAILED"
+                if ev["type"] == "result" and ticket_payload:
+                    db.record_demo_run(tid)  # count only after a successful run
                 if ev["type"] in ("error", "result"):
                     ev["quota"] = db.quota_status()
                 yield json.dumps(ev, ensure_ascii=False) + "\n"
         except Exception as e:  # unexpected: refund and report
             db.refund(ticket)
-            yield json.dumps({"type": "error", "node": 0, "name": "Pipeline", "message": f"{type(e).__name__}: {e}",
-                              "quota": db.quota_status()}) + "\n"
+            log.exception("pipeline failed")
+            msg = "The forecast couldn't be completed. Please try again."
+            yield json.dumps({"type": "error", "node": 0, "name": "Pipeline", "message": msg, "error": msg,
+                              "code": "AI_FAILED", "quota": db.quota_status()}) + "\n"
 
     return StreamingResponse(gen(), media_type="application/x-ndjson")
 
 
 async def history(request):
-    return JSONResponse(db.list_forecasts())
+    return JSONResponse(db.list_forecasts(tid=_tid(request)))
 
 
 def _fid(request):
@@ -133,26 +271,41 @@ def _fid(request):
 
 async def history_item(request):
     fid = _fid(request)
-    d = db.get_forecast(fid) if fid is not None else None
+    d = db.get_forecast(fid, _tid(request)) if fid is not None else None
     if not d:
-        return JSONResponse({"detail": "Forecast not found"}, status_code=404)
+        return err("Forecast not found.", "NOT_FOUND", 404)
     d["id"] = fid
     return JSONResponse(d)
 
 
 async def history_delete(request):
     fid = _fid(request)
-    if fid is None or not db.delete_forecast(fid):
-        return JSONResponse({"detail": "Forecast not found"}, status_code=404)
+    if fid is None or not db.delete_forecast(fid, _tid(request)):
+        return err("Forecast not found.", "NOT_FOUND", 404)
     return JSONResponse({"ok": True})
+
+
+async def not_found(request, exc):
+    return err("Not found.", "NOT_FOUND", 404)
+
+
+async def server_error(request, exc):
+    log.exception("unhandled error")
+    return err("Something went wrong on the server. Please try again.", "AI_FAILED", 500)
 
 
 routes = [
     Route("/", index),
+    Route("/health", health),
+    Route("/api/info", info),
+    Route("/api/samples", samples),
+    Route("/api/samples/{sid}", sample_one),
+    Route("/api/keys", keys_get, methods=["GET"]),
+    Route("/api/keys", keys_post, methods=["POST"]),
+    Route("/api/keys/test", keys_test, methods=["POST"]),
+    Route("/api/keys/groq", keys_delete, methods=["DELETE"]),
     Route("/api/status", status),
     Route("/api/presets", presets),
-    Route("/api/settings", save_settings, methods=["POST"]),
-    Route("/api/test-key", test_key, methods=["POST"]),
     Route("/api/parse-log", parse_log, methods=["POST"]),
     Route("/api/forecast", forecast, methods=["POST"]),
     Route("/api/history", history),
@@ -160,11 +313,13 @@ routes = [
     Route("/api/history/{fid}", history_delete, methods=["DELETE"]),
     Mount("/static", app=StaticFiles(directory=STATIC), name="static"),
 ]
+if SAMPLES.is_dir():
+    routes.append(Mount("/samples", app=StaticFiles(directory=SAMPLES), name="samples"))
 
-app = Starlette(routes=routes)
+app = Starlette(routes=routes, exception_handlers={404: not_found, 500: server_error})
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host=HOST, port=PORT)
+    uvicorn.run(app, host=config.HOST, port=config.PORT)

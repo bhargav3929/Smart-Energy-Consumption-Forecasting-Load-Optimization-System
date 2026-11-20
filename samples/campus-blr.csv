@@ -1,0 +1,7 @@
+appliance,watts,hours_per_day,peak_hour,shiftable
+45 Lab Workstations (120 W each),5400,9,9,false
+Central HVAC,9000,10,9,false
+Hostel Water Heaters,12000,3,18,true
+Lab & Hostel Lighting,3000,12,17,false
+Water Pump,1500,2,18,true
+Network & Server Rack,800,24,0,false

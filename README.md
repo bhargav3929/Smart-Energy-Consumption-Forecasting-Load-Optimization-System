@@ -1,58 +1,85 @@
 # Smart Energy Consumption Forecasting & Load Optimization System
 
-A local workbench that takes a list of appliances (or a preset facility), pulls the real 7-day weather for your city, and tells you:
+This app helps a household or small building cut its electricity bill. You give it a list of appliances (or pick a ready-made example) and a city. It downloads the real 7-day weather for that city, forecasts how many units (kWh) you will use, works out your monthly bill under a tiered + time-of-use tariff, and tells you which appliances to move out of the expensive **18:00–22:00 evening peak**. It also shows the money, peak kW and CO₂ you save. It is made for final-year students and anyone who wants to understand smart-grid demand-side management.
 
-- how many kWh you will use per day and per 30 days (weather-adjusted),
-- what your monthly bill will be under a tiered + Time-of-Use (ToU) tariff,
-- which appliances to move out of the expensive **18:00–22:00 peak window**, and how much money, peak kW and CO₂ that saves.
+> Disclaimer: Predicted electricity bills and load-shifting schedules are educational estimates based on weather and tariff models and do not constitute professional utility or financial advice.
 
-Open `http://127.0.0.1:8005` — the workbench loads directly (no landing page).
+## What you need
 
-## Highlights
-- 5-node streaming pipeline (NDJSON): gatekeeper → weather → bill & peak-shaving engine → Groq strategist → SQLite report.
-- **Groq only** (`openai/gpt-oss-120b`, falling back to `qwen/qwen3.8-27b`, then `llama-3.3-70b-versatile`). No key? Deterministic energy-audit rules take over.
-- Server-side rate limit: **15 forecasts / hour** (SQLite, WAL), auto-refunded if the city can't be found.
-- Three ways to provide data: 4 one-click presets, an editable appliance table, or a CSV/JSON upload (`appliance,watts,hours_per_day,peak_hour,shiftable`).
-- Interactive 24-hour baseline-vs-optimized SVG chart, scenario/facility comparison, printable report, forecast history.
-- Pure-Python dependencies only: `starlette`, `uvicorn`, `httpx`, `python-dotenv`, `python-multipart`.
+- **Python 3.10 or newer** — download from <https://www.python.org/downloads/> (on Windows, tick "Add python.exe to PATH").
+- **A free Groq key** (optional but recommended) — get one in about 1 minute, no card needed: <https://console.groq.com/keys>. Without a key the app still works and uses built-in energy-audit rules instead of AI advice.
+- An internet connection (for the weather and for installing packages the first time).
 
-## Setup (plain English)
-1. Install Python 3.10 or newer.
-2. Open a terminal in this folder.
-3. Create a virtual environment and install packages (one time).
-4. Start the server and open <http://127.0.0.1:8005>.
-5. (Optional) Click **API Keys**, paste a free Groq key (`gsk_...`) from <https://console.groq.com/keys>, press **Test Key**, then **Save**. You can also put `GROQ_API_KEY=...` in a `.env` file (see `.env.example`).
+## Run it (one command)
 
-Double-click `start.bat` (Windows) or run `./start.sh` (macOS/Linux) to do steps 3–4 automatically. The server always runs through `python -m uvicorn` (never `uvicorn.exe`).
+- **macOS / Linux:** `chmod +x start.sh && ./start.sh`
+- **Windows:** double-click `start.bat`
 
-Port **8005** is dedicated to this project so it never collides with 8001–8004.
+The script creates a private Python environment, installs the packages, creates a `.env` file for you, starts the server and opens your browser at **http://127.0.0.1:8005**. Running it again is fast and safe. Close the terminal window (or press Ctrl+C) to stop.
 
-## Appliance CSV format
+## Add your Groq key
+
+Click **API Keys** in the app, paste your key (it starts with `gsk_`), press **Test Key**, then **Save**. Or open the `.env` file and set `GROQ_API_KEY=gsk_...`, then restart.
+
+## How to use it
+
+1. Click one of the four **presets** (for example "3BHK Smart Household — Hyderabad"). Press **View saved result for this preset** to see a finished forecast instantly.
+2. Press **Run Forecast & Optimize** to run it live. You can watch the 5 steps finish one by one.
+3. Open the three tabs: **Monthly Bill & Peak Schedule**, **Scenario & Facility Compare** and **Load Reduction Report**.
+4. Now try your own data: edit the appliance table, or upload a CSV/JSON file, then type your city and run again.
+5. Open **Forecast History** to reopen or delete earlier forecasts.
+
+Your own CSV looks like this (`peak_hour` is the hour 0–23 when the appliance normally starts):
+
 ```
 appliance,watts,hours_per_day,peak_hour,shiftable
 Air Conditioner,1500,8,21,false
 EV Charger,3300,4,19,true
 ```
-`peak_hour` is the hour (0–23) your appliance normally starts running. A sample file can be downloaded from the app.
 
-## Launch commands
+You can download a sample file from the app. Ready-made examples are also in the `samples/` folder. The free plan allows **15 forecasts per hour**; the counter at the top shows how many are left.
 
-**Windows (PowerShell, one line):**
-```powershell
-python -m venv .venv; .\.venv\Scripts\python.exe -m pip install -r requirements.txt; .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8005
+## How it works
+
+Input → 5 steps → AI advice → report:
+
+1. **Gatekeeper** (`app/pipeline.py`) checks your appliance rows and finds the city's coordinates (Open-Meteo, no key needed).
+2. **Weather** (`app/pipeline.py`, `app/energy.py`) downloads 7 days of temperature and sunshine and turns them into a cooling/heating factor.
+3. **Bill & peak engine** (`app/energy.py`) builds a 24-hour load curve, applies the tariff, and moves shiftable loads out of the 18:00–22:00 peak.
+4. **Groq strategist** (`app/groq_client.py`) asks the Groq AI for tailored advice. It retries when Groq is busy and falls back to a second model, then to built-in rules, so you always get an answer.
+5. **Report** (`app/db.py`) saves the forecast in a local SQLite file and sends everything to the page.
+
+The bill and kWh numbers are calculated by plain Python, not by the AI, so they are repeatable.
+
+## Project structure
+
+```
+Smart-Energy-Consumption-Forecasting-Load-Optimization-System/
+├── start.sh / start.bat     one-command start
+├── run.py                   alternative launcher (python run.py)
+├── requirements.txt         pinned, pure-Python packages
+├── .env.example             settings template (copied to .env on first run)
+├── VIVA_NOTES.md            explanation and viva questions
+├── app/
+│   ├── main.py              web server and API routes
+│   ├── config.py            settings read from .env
+│   ├── pipeline.py          the 5-step forecast pipeline
+│   ├── energy.py            load curves, tariff, peak shifting, CO₂
+│   ├── groq_client.py       Groq calls with retry and fallback
+│   ├── db.py                SQLite: key, hourly limit, history
+│   ├── presets.py           the four example facilities
+│   └── static/              index.html, app.js, style.css
+├── samples/                 example appliance logs (.csv)
+│   └── results/             saved forecast for each example (.json)
+└── scripts/generate_samples.py   re-creates the samples from real runs
 ```
 
-**macOS / Linux:**
-```bash
-python3 -m venv .venv && ./.venv/bin/python -m pip install -r requirements.txt && ./.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8005
-```
+## Troubleshooting
 
-> Disclaimer: Predicted electricity bills and load-shifting schedules are educational estimates based on weather and tariff models and do not constitute professional utility or financial advice.
-
-Run the command:
-
-Windows (PowerShell):
-python -m venv .venv; .\.venv\Scripts\python.exe -m pip install -r requirements.txt; .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8005
-
-macOS / Linux (Terminal):
-python3 -m venv .venv && ./.venv/bin/python -m pip install -r requirements.txt && ./.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8005
+- **Port already in use:** another program is using 8005. Close it, or change `PORT=` in `.env` (and open that port in the browser), then start again.
+- **"The AI service is busy right now":** Groq's free tier is overloaded. Wait a minute and run again. The app already retried and your forecast still completes with the built-in rules.
+- **"Your Groq key was rejected":** open **API Keys** and paste a fresh key from <https://console.groq.com/keys>.
+- **Python not found:** install Python 3.10+ from <https://www.python.org/downloads/> and tick "Add python.exe to PATH", then run the start script again.
+- **Install failed on a slow connection:** check your internet and run the start script again; it continues where it stopped.
+- **"Could not find a city":** check the spelling of the city name.
+- **"Hourly limit reached":** the 15-per-hour limit resets on a rolling basis; the message says how many minutes are left.

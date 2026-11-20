@@ -1,0 +1,476 @@
+{
+ "created_at": 1795186703.16751,
+ "title": "Clinic & Pharmacy · Pune",
+ "generated": "20 Nov 2026, 20:28",
+ "city": {
+  "name": "Pune",
+  "admin1": "Maharashtra",
+  "country": "India",
+  "country_code": "IN",
+  "lat": 18.51957,
+  "lon": 73.85535,
+  "timezone": "Asia/Kolkata"
+ },
+ "currency": "₹",
+ "tariff": {
+  "label": "India tiered + ToU (illustrative)",
+  "slabs": [
+   [
+    100,
+    3.5
+   ],
+   [
+    200,
+    5.0
+   ],
+   [
+    400,
+    7.0
+   ],
+   [
+    null,
+    8.5
+   ]
+  ],
+  "peak_surcharge": 3.0,
+  "off_discount": 1.5,
+  "fixed": 120.0,
+  "co2_kg_per_kwh": 0.82
+ },
+ "appliances": [
+  {
+   "name": "Medical Vaccine Chiller",
+   "watts": 200.0,
+   "hours_per_day": 24.0,
+   "peak_hour": 0,
+   "shiftable": false
+  },
+  {
+   "name": "Clinic HVAC",
+   "watts": 5500.0,
+   "hours_per_day": 10.0,
+   "peak_hour": 9,
+   "shiftable": false
+  },
+  {
+   "name": "Clinic & Shop Lighting",
+   "watts": 1200.0,
+   "hours_per_day": 11.0,
+   "peak_hour": 9,
+   "shiftable": false
+  },
+  {
+   "name": "Autoclave Sterilizer",
+   "watts": 3000.0,
+   "hours_per_day": 2.0,
+   "peak_hour": 17,
+   "shiftable": true
+  },
+  {
+   "name": "Pharmacy Display Fridge",
+   "watts": 300.0,
+   "hours_per_day": 24.0,
+   "peak_hour": 0,
+   "shiftable": false
+  },
+  {
+   "name": "Water Heater",
+   "watts": 1500.0,
+   "hours_per_day": 2.0,
+   "peak_hour": 18,
+   "shiftable": true
+  }
+ ],
+ "weather": {
+  "cooling": 0.974,
+  "heating": 1.0,
+  "avg_temp": 24.4,
+  "max_temp": 31.7,
+  "min_temp": 15.5,
+  "avg_solar": 509.0,
+  "daily": [
+   {
+    "date": "2026-11-20",
+    "avg": 22.5,
+    "max": 29.0,
+    "min": 16.6
+   },
+   {
+    "date": "2026-11-21",
+    "avg": 22.7,
+    "max": 30.3,
+    "min": 15.5
+   },
+   {
+    "date": "2026-11-22",
+    "avg": 23.7,
+    "max": 30.9,
+    "min": 17.4
+   },
+   {
+    "date": "2026-11-23",
+    "avg": 24.6,
+    "max": 31.0,
+    "min": 18.5
+   },
+   {
+    "date": "2026-11-24",
+    "avg": 25.6,
+    "max": 31.3,
+    "min": 20.3
+   },
+   {
+    "date": "2026-11-25",
+    "avg": 25.7,
+    "max": 31.7,
+    "min": 19.8
+   },
+   {
+    "date": "2026-11-26",
+    "avg": 25.9,
+    "max": 30.7,
+    "min": 20.0
+   }
+  ],
+  "cooling_degree_factor": 0.974,
+  "source": "open-meteo"
+ },
+ "energy": {
+  "daily_kwh_baseline": 87.65,
+  "daily_kwh_optimized": 87.74,
+  "month_kwh": 2629.4,
+  "month_kwh_optimized": 2632.3,
+  "bill_baseline": 22447.44,
+  "bill_optimized": 21351.96,
+  "bill_breakdown_baseline": {
+   "energy": 21199.53,
+   "tou": 1127.92,
+   "fixed": 120.0,
+   "total": 22447.44
+  },
+  "bill_breakdown_optimized": {
+   "energy": 21224.36,
+   "tou": 7.6,
+   "fixed": 120.0,
+   "total": 21351.96
+  },
+  "savings_month": 1095.48,
+  "savings_pct": 4.9,
+  "peak_kw_before": 10.27,
+  "peak_kw_after": 8.22,
+  "peak_shaved_kw": 2.05,
+  "peak_reduction_pct": 19.9,
+  "peak_window_kwh_before": 14.47,
+  "peak_window_kwh_after": 6.52,
+  "co2_before_kg": 2217.7,
+  "co2_after_kg": 2158.9,
+  "co2_saved_kg": 58.8,
+  "baseline_curve": [
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   10.2,
+   10.27,
+   3.2,
+   0.5,
+   0.5,
+   0.5,
+   0.375
+  ],
+  "optimized_curve": [
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   0.5,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   7.2,
+   8.223,
+   8.223,
+   5.283,
+   1.213,
+   0.013,
+   0.013,
+   5.0,
+   4.875
+  ],
+  "daily_kwh_unadjusted": 89.2,
+  "month_kwh_unadjusted": 2676.0,
+  "bill_unadjusted": 22967.0,
+  "weather_extra_kwh_month": -46.6,
+  "weather_extra_cost_month": -519.56
+ },
+ "schedule": [
+  {
+   "appliance": "Clinic HVAC",
+   "watts": 5500.0,
+   "kind": "cooling",
+   "action": "precool",
+   "hours": 9.74,
+   "original_window": "09:00–19:00",
+   "new_window": "16:00–18:00 pre-cool + reduced peak run",
+   "daily_kwh": 53.57,
+   "peak_kwh_day": 4.07,
+   "monthly_saving": 146.52,
+   "note": ""
+  },
+  {
+   "appliance": "Clinic & Shop Lighting",
+   "watts": 1200.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 11.0,
+   "original_window": "09:00–20:00",
+   "new_window": "09:00–20:00",
+   "daily_kwh": 13.2,
+   "peak_kwh_day": 2.4,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Pharmacy Display Fridge",
+   "watts": 300.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 24.0,
+   "original_window": "24h (always-on)",
+   "new_window": "24h (always-on)",
+   "daily_kwh": 7.2,
+   "peak_kwh_day": 1.2,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Autoclave Sterilizer",
+   "watts": 3000.0,
+   "kind": "base",
+   "action": "shift",
+   "hours": 2.0,
+   "original_window": "17:00–19:00",
+   "new_window": "22:00–00:00",
+   "daily_kwh": 6.0,
+   "peak_kwh_day": 3.0,
+   "monthly_saving": 540.0,
+   "note": ""
+  },
+  {
+   "appliance": "Medical Vaccine Chiller",
+   "watts": 200.0,
+   "kind": "cooling",
+   "action": "precool",
+   "hours": 23.38,
+   "original_window": "00:00–00:00",
+   "new_window": "16:00–18:00 pre-cool + reduced peak run",
+   "daily_kwh": 4.68,
+   "peak_kwh_day": 0.8,
+   "monthly_saving": 28.8,
+   "note": ""
+  },
+  {
+   "appliance": "Water Heater",
+   "watts": 1500.0,
+   "kind": "heating",
+   "action": "shift",
+   "hours": 2.0,
+   "original_window": "18:00–20:00",
+   "new_window": "22:00–00:00",
+   "daily_kwh": 3.0,
+   "peak_kwh_day": 3.0,
+   "monthly_saving": 405.0,
+   "note": ""
+  }
+ ],
+ "per_appliance": [
+  {
+   "name": "Clinic HVAC",
+   "kwh_day": 53.57,
+   "share_pct": 61.1
+  },
+  {
+   "name": "Clinic & Shop Lighting",
+   "kwh_day": 13.2,
+   "share_pct": 15.1
+  },
+  {
+   "name": "Pharmacy Display Fridge",
+   "kwh_day": 7.2,
+   "share_pct": 8.2
+  },
+  {
+   "name": "Autoclave Sterilizer",
+   "kwh_day": 6.0,
+   "share_pct": 6.8
+  },
+  {
+   "name": "Medical Vaccine Chiller",
+   "kwh_day": 4.68,
+   "share_pct": 5.3
+  },
+  {
+   "name": "Water Heater",
+   "kwh_day": 3.0,
+   "share_pct": 3.4
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Baseline (as logged)",
+   "daily_kwh": 87.65,
+   "peak_kw": 10.27,
+   "bill": 22447.44,
+   "co2_kg": 2217.7,
+   "savings": 0.0,
+   "savings_pct": 0.0
+  },
+  {
+   "name": "Load-shifted schedule",
+   "daily_kwh": 87.74,
+   "peak_kw": 8.22,
+   "bill": 21351.96,
+   "co2_kg": 2158.9,
+   "savings": 1095.48,
+   "savings_pct": 4.9
+  },
+  {
+   "name": "Shifted + thermostat +2 °C",
+   "daily_kwh": 80.67,
+   "peak_kw": 7.31,
+   "bill": 19324.61,
+   "co2_kg": 1972.6,
+   "savings": 3122.83,
+   "savings_pct": 13.9
+  }
+ ],
+ "benchmark": [
+  {
+   "name": "3BHK Household",
+   "daily_kwh": 32.19,
+   "bill": 7990.73,
+   "peak_kw": 5.88,
+   "savings_pct": 16.4
+  },
+  {
+   "name": "Campus Lab & Hostel",
+   "daily_kwh": 230.46,
+   "bill": 61981.7,
+   "peak_kw": 23.96,
+   "savings_pct": 8.8
+  },
+  {
+   "name": "2BHK Summer Peak",
+   "daily_kwh": 30.81,
+   "bill": 7017.07,
+   "peak_kw": 3.88,
+   "savings_pct": 4.5
+  },
+  {
+   "name": "Clinic & Pharmacy",
+   "daily_kwh": 87.65,
+   "bill": 22447.44,
+   "peak_kw": 10.27,
+   "savings_pct": 4.9
+  }
+ ],
+ "strategist": {
+  "summary": "Shifting flexible loads cuts peak demand by 19.9% (2.05 kW) and saves about ₹1,095 per month with roughly 58.8 kg CO₂ avoided.",
+  "actions": [
+   {
+    "appliance": "Clinic HVAC",
+    "action": "Pre-cool 16:00–18:00, then raise set-point during peak",
+    "reason": "Thermal mass of the room carries the comfort through the expensive evening hours."
+   },
+   {
+    "appliance": "Autoclave Sterilizer",
+    "action": "Run 22:00–00:00 instead of 17:00–19:00",
+    "reason": "Moves 3.0 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹540/month."
+   },
+   {
+    "appliance": "Medical Vaccine Chiller",
+    "action": "Pre-cool 16:00–18:00, then raise set-point during peak",
+    "reason": "Thermal mass of the room carries the comfort through the expensive evening hours."
+   },
+   {
+    "appliance": "Water Heater",
+    "action": "Run 22:00–00:00 instead of 18:00–20:00",
+    "reason": "Moves 3.0 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹405/month."
+   }
+  ],
+  "thermostat": [
+   "Weather is mild: use fans or natural ventilation before running HVAC.",
+   "Pre-cool to ~23 °C between 16:00 and 18:00, then let it drift up to 26 °C during 18:00–22:00.",
+   "Keep refrigeration doors sealed and defrost regularly to hold compressor duty low."
+  ],
+  "tips": [
+   "Run EV chargers, washing machines, geysers and pumps after 22:00 on a timer or smart plug.",
+   "Stagger high-wattage loads so they never start at the same minute (lowers peak kW).",
+   "Cook with lids on and batch microwave/induction use outside 18:00–22:00 where possible.",
+   "Check your tariff slab each month; trimming a few kWh can drop you into a cheaper tier."
+  ],
+  "source": "rules",
+  "model": null,
+  "fallback": false
+ },
+ "debug": {
+  "run_id": "dd12f0f5",
+  "nodes": [
+   {
+    "id": 1,
+    "name": "Appliance Log & City Gatekeeper",
+    "ms": 811
+   },
+   {
+    "id": 2,
+    "name": "7-Day Weather & Cooling/Heating Telemetry",
+    "ms": 782
+   },
+   {
+    "id": 3,
+    "name": "Monthly Bill & Peak-Load Shaving Engine",
+    "ms": 5
+   },
+   {
+    "id": 4,
+    "name": "Groq Load-Optimization Strategist",
+    "ms": 0
+   },
+   {
+    "id": 5,
+    "name": "Report & SQLite Persistence",
+    "ms": 17
+   }
+  ],
+  "geocode_ms": 811,
+  "weather_ms": 782,
+  "groq_ms": null,
+  "groq_model": null,
+  "groq_fallback": false,
+  "weather_source": "open-meteo",
+  "notes": [
+   "No Groq key configured → deterministic energy-audit rules used."
+  ],
+  "total_ms": 1615
+ }
+}

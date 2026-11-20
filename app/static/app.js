@@ -6,7 +6,21 @@ const NODES = [
   [1, "Appliance Log & City Gatekeeper"], [2, "7-Day Weather & Cooling/Heating Telemetry"],
   [3, "Monthly Bill & Peak-Load Shaving Engine"], [4, "Groq Load-Optimization Strategist"], [5, "Report & SQLite Persistence"],
 ];
-const state = { rows: [], label: "", presets: [], forecast: null, running: false, events: [], timer: null, t0: 0, view: "bill", currentId: null };
+const state = { demo: false, selectedPreset: null, rows: [], label: "", presets: [], forecast: null, running: false, events: [], timer: null, t0: 0, view: "bill", currentId: null };
+
+// ---------- demo ticket + relative API helper ----------
+// The app may be served under a sub-path, so every URL is relative (api/info, never /api/info).
+let TICKET = "";
+try {
+  const u = new URL(location.href), t = u.searchParams.get("ticket");
+  if (t) { sessionStorage.setItem("lastsem_ticket", t); u.searchParams.delete("ticket"); history.replaceState(null, "", u.pathname + u.search + u.hash); }
+  TICKET = sessionStorage.getItem("lastsem_ticket") || "";
+} catch {}
+function api(url, opts = {}) {
+  const headers = { ...(opts.headers || {}) };
+  if (TICKET) headers["X-LastSem-Ticket"] = TICKET;
+  return fetch(url, { ...opts, headers });
+}
 
 // ---------- formatting ----------
 const cur = () => (state.forecast ? state.forecast.currency : "₹");
@@ -22,7 +36,7 @@ function setQuota(q) {
   p.title = q.remaining < q.limit && q.reset_in ? `Oldest request frees up in ~${Math.ceil(q.reset_in / 60)} min` : "Server-side sliding window: 15 forecasts per hour";
 }
 async function loadStatus() {
-  try { const s = await (await fetch("/api/status")).json(); setQuota(s.quota); return s; } catch { return null; }
+  try { const s = await (await api("api/status")).json(); setQuota(s.quota); state.demo = !!s.demo_mode; $("#keysBtn").hidden = state.demo; return s; } catch { return null; }
 }
 
 // ---------- input panel ----------
@@ -50,6 +64,7 @@ $("#presets").addEventListener("click", (e) => {
   const b = e.target.closest(".preset"); if (!b) return;
   const p = state.presets.find((x) => x.id === b.dataset.id);
   $$(".preset").forEach((x) => x.classList.toggle("on", x === b));
+  state.selectedPreset = p.id; $("#viewSaved").hidden = false;
   $("#city").value = p.city; state.label = p.title.split(" — ")[0]; setRows(p.appliances);
   msg($("#inputMsg"), `Loaded preset: ${p.short}. Press Run Forecast & Optimize.`, "ok");
 });
@@ -68,9 +83,9 @@ $("#fileIn").addEventListener("change", async (e) => {
   const f = e.target.files[0]; if (!f) return;
   const fd = new FormData(); fd.append("file", f);
   try {
-    const r = await fetch("/api/parse-log", { method: "POST", body: fd });
+    const r = await api("api/parse-log", { method: "POST", body: fd });
     const j = await r.json();
-    if (!r.ok) throw new Error(j.detail || "Upload failed");
+    if (!r.ok) throw new Error(j.error || "Upload failed");
     setRows(j.appliances); state.label = "Uploaded log";
     msg($("#inputMsg"), `Loaded ${j.appliances.length} rows from ${f.name}.` + (j.warnings.length ? " Skipped: " + j.warnings.join(" ") : ""), j.warnings.length ? "err" : "ok");
   } catch (err) { msg($("#inputMsg"), err.message, "err"); }
@@ -112,7 +127,7 @@ async function runForecast() {
   const status = {}; renderStepper(status); startTimer(); renderDebug(null);
   let finished = false;
   try {
-    const res = await fetch("/api/forecast", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ city, label: state.label, appliances: state.rows }) });
+    const res = await api("api/forecast", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ city, label: state.label, appliances: state.rows }) });
     if (!res.ok) { const j = await res.json().catch(() => ({})); if (j.quota) setQuota(j.quota); throw new Error(j.error || "Request failed (" + res.status + ")"); }
     const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
     const handle = (line) => {
@@ -282,12 +297,12 @@ function openDrawer() { drawer.hidden = scrim.hidden = false; loadHistory(); }
 function closeDrawer() { drawer.hidden = scrim.hidden = true; }
 $("#historyBtn").addEventListener("click", openDrawer); $("#drawerClose").addEventListener("click", closeDrawer); scrim.addEventListener("click", () => { closeDrawer(); closeModal(); });
 async function loadHistory() {
-  const list = await (await fetch("/api/history")).json();
+  const list = await (await api("api/history")).json();
   $("#historyList").innerHTML = list.map((h) => `<li><button class="hitem ${h.id === state.currentId ? "on" : ""}" data-id="${h.id}"><b>${esc(h.title)}</b><span>${new Date(h.created_at * 1000).toLocaleString()}${h.daily_kwh != null ? ` · ${fmt(h.daily_kwh)} kWh/day` : ""}</span></button><button class="hdel" data-del="${h.id}" aria-label="Delete forecast">Delete</button></li>`).join("") || '<li class="muted">No saved forecasts yet.</li>';
   return list;
 }
 async function loadForecast(id) {
-  const r = await fetch("/api/history/" + id); if (!r.ok) return;
+  const r = await api("api/history/" + id); if (!r.ok) return;
   const f = await r.json(); state.currentId = id; state.events = [];
   $("#city").value = f.city.name; state.label = f.title.split(" · ")[0]; setRows(f.appliances);
   renderForecast(f); renderDebug(f);
@@ -297,7 +312,7 @@ $("#historyList").addEventListener("click", async (e) => {
   const d = e.target.closest("[data-del]"), o = e.target.closest(".hitem");
   if (d) {
     const id = +d.dataset.del;
-    await fetch("/api/history/" + id, { method: "DELETE" });
+    await api("api/history/" + id, { method: "DELETE" });
     if (id === state.currentId) { state.forecast = null; state.currentId = null; ["bill", "compare", "report"].forEach((v) => ($("#view-" + v).innerHTML = "")); $("#empty").hidden = false; setView(state.view); }
     loadHistory();
   } else if (o) { await loadForecast(+o.dataset.id); closeDrawer(); }
@@ -307,8 +322,7 @@ $("#historyList").addEventListener("click", async (e) => {
 const modal = $("#modal");
 async function openModal() {
   modal.hidden = false; msg($("#keyMsg"), ""); $("#groqKey").value = "";
-  const s = await loadStatus();
-  $("#keyState").textContent = s && s.has_key ? `A key is configured (${s.key_masked}, from ${s.key_source}).` : "No key configured yet.";
+  try { await refreshKeyState(); } catch { $("#keyState").textContent = ""; }
 }
 function closeModal() { modal.hidden = true; }
 $("#keysBtn").addEventListener("click", openModal); $("#modalClose").addEventListener("click", closeModal);
@@ -317,28 +331,51 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMod
 $("#testKey").addEventListener("click", async () => {
   msg($("#keyMsg"), "Testing…");
   try {
-    const r = await (await fetch("/api/test-key", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ groq_api_key: $("#groqKey").value.trim() }) })).json();
+    const r = await (await api("api/keys/test", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ groq_api_key: $("#groqKey").value.trim() }) })).json();
     msg($("#keyMsg"), r.message, r.ok ? "ok" : "err");
   } catch (e) { msg($("#keyMsg"), e.message, "err"); }
 });
+async function refreshKeyState() {
+  const k = await (await api("api/keys")).json();
+  const g = k.groq || {};
+  $("#keyState").textContent = g.configured ? `A key is configured (${g.masked}, from ${g.source === "ui" ? "this app" : ".env"}).` : "No key configured yet.";
+}
 $("#saveKey").addEventListener("click", async () => {
+  const key = $("#groqKey").value.trim();
   try {
-    const res = await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ groq_api_key: $("#groqKey").value.trim() }) });
+    const res = key
+      ? await api("api/keys", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ groq_api_key: key }) })
+      : await api("api/keys/groq", { method: "DELETE" });
     const j = await res.json();
-    if (!res.ok) return msg($("#keyMsg"), j.message || "Could not save", "err");
-    msg($("#keyMsg"), $("#groqKey").value.trim() ? "Key saved." : "Saved key cleared.", "ok");
-    $("#keyState").textContent = j.has_key ? `A key is configured (${j.key_masked}, from ${j.key_source}).` : "No key configured yet.";
+    if (!res.ok) return msg($("#keyMsg"), j.error || "Could not save", "err");
+    msg($("#keyMsg"), key ? "Key saved." : "Saved key cleared.", "ok");
     $("#groqKey").value = "";
+    await refreshKeyState(); loadStatus();
   } catch (e) { msg($("#keyMsg"), e.message, "err"); }
+});
+
+// ---------- saved sample results (shown instantly, no AI call) ----------
+$("#viewSaved").addEventListener("click", async () => {
+  if (!state.selectedPreset) return;
+  try {
+    const r = await api("api/samples/" + encodeURIComponent(state.selectedPreset));
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || "Could not load the saved result");
+    if (!j.result) return msg($("#inputMsg"), "No saved result for this sample yet. Press Run Forecast & Optimize.", "err");
+    state.forecast = j.result; state.currentId = null; state.events = [];
+    showAlert(""); renderForecast(j.result); renderDebug(j.result);
+    const st = {}; (j.result.debug.nodes || []).forEach((n) => (st[n.id] = { status: "done", ms: n.ms })); renderStepper(st);
+    msg($("#inputMsg"), "Showing the saved result for this sample.", "ok");
+  } catch (e) { msg($("#inputMsg"), e.message, "err"); }
 });
 
 // ---------- init ----------
 (async function init() {
   renderStepper(); renderRows(); renderDebug(null);
   loadStatus();
-  try { state.presets = await (await fetch("/api/presets")).json(); renderPresets(); } catch {}
+  try { state.presets = await (await api("api/presets")).json(); renderPresets(); } catch {}
   try {
-    const list = await (await fetch("/api/history")).json();
+    const list = await (await api("api/history")).json();
     if (list.length) { await loadForecast(list[0].id); }
   } catch {}
 })();

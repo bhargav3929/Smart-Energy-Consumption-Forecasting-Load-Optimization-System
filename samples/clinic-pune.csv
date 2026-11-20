@@ -1,0 +1,7 @@
+appliance,watts,hours_per_day,peak_hour,shiftable
+Medical Vaccine Chiller,200,24,0,false
+Clinic HVAC,5500,10,9,false
+Clinic & Shop Lighting,1200,11,9,false
+Autoclave Sterilizer,3000,2,17,true
+Pharmacy Display Fridge,300,24,0,false
+Water Heater,1500,2,18,true

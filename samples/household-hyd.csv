@@ -1,0 +1,7 @@
+appliance,watts,hours_per_day,peak_hour,shiftable
+Air Conditioner (1.5 ton),1500,8,21,false
+Geyser (Water Heater),2000,1.5,19,true
+EV Charger (3.3 kW),3300,4,19,true
+Refrigerator,75,24,0,false
+Washing Machine,500,1.5,18,true
+Fans & Lighting,250,7,18,false

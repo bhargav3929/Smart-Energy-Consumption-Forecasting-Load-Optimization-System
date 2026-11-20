@@ -1,0 +1,501 @@
+{
+ "created_at": 1795186701.550268,
+ "title": "2BHK Summer Peak · Chennai",
+ "generated": "20 Nov 2026, 20:28",
+ "city": {
+  "name": "Chennai",
+  "admin1": "Tamil Nadu",
+  "country": "India",
+  "country_code": "IN",
+  "lat": 13.08784,
+  "lon": 80.27847,
+  "timezone": "Asia/Kolkata"
+ },
+ "currency": "₹",
+ "tariff": {
+  "label": "India tiered + ToU (illustrative)",
+  "slabs": [
+   [
+    100,
+    3.5
+   ],
+   [
+    200,
+    5.0
+   ],
+   [
+    400,
+    7.0
+   ],
+   [
+    null,
+    8.5
+   ]
+  ],
+  "peak_surcharge": 3.0,
+  "off_discount": 1.5,
+  "fixed": 120.0,
+  "co2_kg_per_kwh": 0.82
+ },
+ "appliances": [
+  {
+   "name": "Split AC #1 (Bedroom)",
+   "watts": 1600.0,
+   "hours_per_day": 9.0,
+   "peak_hour": 21,
+   "shiftable": false
+  },
+  {
+   "name": "Split AC #2 (Hall)",
+   "watts": 1400.0,
+   "hours_per_day": 7.0,
+   "peak_hour": 19,
+   "shiftable": false
+  },
+  {
+   "name": "Induction Stove",
+   "watts": 1800.0,
+   "hours_per_day": 2.0,
+   "peak_hour": 19,
+   "shiftable": false
+  },
+  {
+   "name": "Microwave Oven",
+   "watts": 1200.0,
+   "hours_per_day": 0.5,
+   "peak_hour": 19,
+   "shiftable": false
+  },
+  {
+   "name": "Mixer Grinder",
+   "watts": 500.0,
+   "hours_per_day": 0.5,
+   "peak_hour": 18,
+   "shiftable": true
+  },
+  {
+   "name": "Refrigerator",
+   "watts": 85.0,
+   "hours_per_day": 24.0,
+   "peak_hour": 0,
+   "shiftable": false
+  },
+  {
+   "name": "Water Pump",
+   "watts": 750.0,
+   "hours_per_day": 1.0,
+   "peak_hour": 18,
+   "shiftable": true
+  }
+ ],
+ "weather": {
+  "cooling": 1.087,
+  "heating": 1.0,
+  "avg_temp": 26.4,
+  "max_temp": 32.2,
+  "min_temp": 22.1,
+  "avg_solar": 398.0,
+  "daily": [
+   {
+    "date": "2026-11-20",
+    "avg": 27.1,
+    "max": 32.2,
+    "min": 22.1
+   },
+   {
+    "date": "2026-11-21",
+    "avg": 27.2,
+    "max": 32.0,
+    "min": 22.4
+   },
+   {
+    "date": "2026-11-22",
+    "avg": 27.1,
+    "max": 30.9,
+    "min": 23.0
+   },
+   {
+    "date": "2026-11-23",
+    "avg": 26.5,
+    "max": 29.3,
+    "min": 25.0
+   },
+   {
+    "date": "2026-11-24",
+    "avg": 25.5,
+    "max": 26.7,
+    "min": 24.0
+   },
+   {
+    "date": "2026-11-25",
+    "avg": 25.3,
+    "max": 25.7,
+    "min": 24.6
+   },
+   {
+    "date": "2026-11-26",
+    "avg": 25.9,
+    "max": 27.0,
+    "min": 24.6
+   }
+  ],
+  "cooling_degree_factor": 1.087,
+  "source": "open-meteo"
+ },
+ "energy": {
+  "daily_kwh_baseline": 33.55,
+  "daily_kwh_optimized": 33.66,
+  "month_kwh": 1006.4,
+  "month_kwh_optimized": 1009.8,
+  "bill_baseline": 7647.71,
+  "bill_optimized": 7333.49,
+  "bill_breakdown_baseline": {
+   "energy": 7404.08,
+   "tou": 123.63,
+   "fixed": 120.0,
+   "total": 7647.71
+  },
+  "bill_breakdown_optimized": {
+   "energy": 7433.66,
+   "tou": -220.17,
+   "fixed": 120.0,
+   "total": 7333.49
+  },
+  "savings_month": 314.22,
+  "savings_pct": 4.1,
+  "peak_kw_before": 3.88,
+  "peak_kw_after": 3.83,
+  "peak_shaved_kw": 0.05,
+  "peak_reduction_pct": 1.3,
+  "peak_window_kwh_before": 11.34,
+  "peak_window_kwh_after": 8.02,
+  "co2_before_kg": 832.0,
+  "co2_after_kg": 816.0,
+  "co2_saved_kg": 15.9,
+  "baseline_curve": [
+   3.085,
+   3.085,
+   2.538,
+   1.685,
+   1.685,
+   1.685,
+   1.338,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   1.085,
+   3.885,
+   3.285,
+   3.085,
+   3.085,
+   3.085
+  ],
+  "optimized_curve": [
+   3.085,
+   3.085,
+   2.538,
+   1.685,
+   1.685,
+   1.685,
+   1.338,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   0.085,
+   1.303,
+   1.303,
+   -0.495,
+   3.305,
+   2.705,
+   2.505,
+   3.835,
+   3.335
+  ],
+  "daily_kwh_unadjusted": 31.44,
+  "month_kwh_unadjusted": 943.2,
+  "bill_unadjusted": 7149.2,
+  "weather_extra_kwh_month": 63.2,
+  "weather_extra_cost_month": 498.51
+ },
+ "schedule": [
+  {
+   "appliance": "Split AC #1 (Bedroom)",
+   "watts": 1600.0,
+   "kind": "cooling",
+   "action": "precool",
+   "hours": 9.78,
+   "original_window": "21:00–07:00",
+   "new_window": "16:00–18:00 pre-cool + reduced peak run",
+   "daily_kwh": 15.65,
+   "peak_kwh_day": 1.6,
+   "monthly_saving": 57.6,
+   "note": ""
+  },
+  {
+   "appliance": "Split AC #2 (Hall)",
+   "watts": 1400.0,
+   "kind": "cooling",
+   "action": "precool",
+   "hours": 7.61,
+   "original_window": "19:00–03:00",
+   "new_window": "16:00–18:00 pre-cool + reduced peak run",
+   "daily_kwh": 10.65,
+   "peak_kwh_day": 4.2,
+   "monthly_saving": 151.2,
+   "note": ""
+  },
+  {
+   "appliance": "Induction Stove",
+   "watts": 1800.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 2.0,
+   "original_window": "19:00–21:00",
+   "new_window": "19:00–21:00",
+   "daily_kwh": 3.6,
+   "peak_kwh_day": 3.6,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Refrigerator",
+   "watts": 85.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 24.0,
+   "original_window": "24h (always-on)",
+   "new_window": "24h (always-on)",
+   "daily_kwh": 2.04,
+   "peak_kwh_day": 0.34,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Water Pump",
+   "watts": 750.0,
+   "kind": "base",
+   "action": "shift",
+   "hours": 1.0,
+   "original_window": "18:00–19:00",
+   "new_window": "22:00–23:00",
+   "daily_kwh": 0.75,
+   "peak_kwh_day": 0.75,
+   "monthly_saving": 101.25,
+   "note": ""
+  },
+  {
+   "appliance": "Microwave Oven",
+   "watts": 1200.0,
+   "kind": "base",
+   "action": "keep",
+   "hours": 0.5,
+   "original_window": "19:00–20:00",
+   "new_window": "19:00–20:00",
+   "daily_kwh": 0.6,
+   "peak_kwh_day": 0.6,
+   "monthly_saving": 0.0,
+   "note": "Fixed comfort/operational load"
+  },
+  {
+   "appliance": "Mixer Grinder",
+   "watts": 500.0,
+   "kind": "base",
+   "action": "shift",
+   "hours": 0.5,
+   "original_window": "18:00–19:00",
+   "new_window": "23:00–00:00",
+   "daily_kwh": 0.25,
+   "peak_kwh_day": 0.25,
+   "monthly_saving": 33.75,
+   "note": ""
+  }
+ ],
+ "per_appliance": [
+  {
+   "name": "Split AC #1 (Bedroom)",
+   "kwh_day": 15.65,
+   "share_pct": 46.7
+  },
+  {
+   "name": "Split AC #2 (Hall)",
+   "kwh_day": 10.65,
+   "share_pct": 31.8
+  },
+  {
+   "name": "Induction Stove",
+   "kwh_day": 3.6,
+   "share_pct": 10.7
+  },
+  {
+   "name": "Refrigerator",
+   "kwh_day": 2.04,
+   "share_pct": 6.1
+  },
+  {
+   "name": "Water Pump",
+   "kwh_day": 0.75,
+   "share_pct": 2.2
+  },
+  {
+   "name": "Microwave Oven",
+   "kwh_day": 0.6,
+   "share_pct": 1.8
+  },
+  {
+   "name": "Mixer Grinder",
+   "kwh_day": 0.25,
+   "share_pct": 0.7
+  }
+ ],
+ "scenarios": [
+  {
+   "name": "Baseline (as logged)",
+   "daily_kwh": 33.55,
+   "peak_kw": 3.88,
+   "bill": 7647.71,
+   "co2_kg": 832.0,
+   "savings": 0.0,
+   "savings_pct": 0.0
+  },
+  {
+   "name": "Load-shifted schedule",
+   "daily_kwh": 33.66,
+   "peak_kw": 3.83,
+   "bill": 7333.49,
+   "co2_kg": 816.0,
+   "savings": 314.22,
+   "savings_pct": 4.1
+  },
+  {
+   "name": "Shifted + thermostat +2 °C",
+   "daily_kwh": 30.5,
+   "peak_kw": 3.83,
+   "bill": 6614.22,
+   "co2_kg": 743.1,
+   "savings": 1033.49,
+   "savings_pct": 13.5
+  }
+ ],
+ "benchmark": [
+  {
+   "name": "3BHK Household",
+   "daily_kwh": 33.54,
+   "bill": 8275.49,
+   "peak_kw": 5.88,
+   "savings_pct": 15.1
+  },
+  {
+   "name": "Campus Lab & Hostel",
+   "daily_kwh": 240.63,
+   "bill": 65490.35,
+   "peak_kw": 26.3,
+   "savings_pct": 8.8
+  },
+  {
+   "name": "2BHK Summer Peak",
+   "daily_kwh": 33.55,
+   "bill": 7647.71,
+   "peak_kw": 3.88,
+   "savings_pct": 4.1
+  },
+  {
+   "name": "Clinic & Pharmacy",
+   "daily_kwh": 93.98,
+   "bill": 24617.83,
+   "peak_kw": 11.7,
+   "savings_pct": 5.2
+  }
+ ],
+ "strategist": {
+  "summary": "Shifting flexible loads cuts peak demand by 1.3% (0.05 kW) and saves about ₹314 per month with roughly 15.9 kg CO₂ avoided.",
+  "actions": [
+   {
+    "appliance": "Split AC #1 (Bedroom)",
+    "action": "Pre-cool 16:00–18:00, then raise set-point during peak",
+    "reason": "Thermal mass of the room carries the comfort through the expensive evening hours."
+   },
+   {
+    "appliance": "Split AC #2 (Hall)",
+    "action": "Pre-cool 16:00–18:00, then raise set-point during peak",
+    "reason": "Thermal mass of the room carries the comfort through the expensive evening hours."
+   },
+   {
+    "appliance": "Water Pump",
+    "action": "Run 22:00–23:00 instead of 18:00–19:00",
+    "reason": "Moves 0.75 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹101/month."
+   },
+   {
+    "appliance": "Mixer Grinder",
+    "action": "Run 23:00–00:00 instead of 18:00–19:00",
+    "reason": "Moves 0.25 kWh/day out of the 18:00–22:00 peak tariff; saves about ₹34/month."
+   }
+  ],
+  "thermostat": [
+   "Weather is mild: use fans or natural ventilation before running HVAC.",
+   "Pre-cool to ~23 °C between 16:00 and 18:00, then let it drift up to 26 °C during 18:00–22:00.",
+   "Keep refrigeration doors sealed and defrost regularly to hold compressor duty low."
+  ],
+  "tips": [
+   "Run EV chargers, washing machines, geysers and pumps after 22:00 on a timer or smart plug.",
+   "Stagger high-wattage loads so they never start at the same minute (lowers peak kW).",
+   "Cook with lids on and batch microwave/induction use outside 18:00–22:00 where possible.",
+   "Check your tariff slab each month; trimming a few kWh can drop you into a cheaper tier."
+  ],
+  "source": "rules",
+  "model": null,
+  "fallback": false
+ },
+ "debug": {
+  "run_id": "5a4f74a3",
+  "nodes": [
+   {
+    "id": 1,
+    "name": "Appliance Log & City Gatekeeper",
+    "ms": 816
+   },
+   {
+    "id": 2,
+    "name": "7-Day Weather & Cooling/Heating Telemetry",
+    "ms": 1049
+   },
+   {
+    "id": 3,
+    "name": "Monthly Bill & Peak-Load Shaving Engine",
+    "ms": 3
+   },
+   {
+    "id": 4,
+    "name": "Groq Load-Optimization Strategist",
+    "ms": 0
+   },
+   {
+    "id": 5,
+    "name": "Report & SQLite Persistence",
+    "ms": 15
+   }
+  ],
+  "geocode_ms": 816,
+  "weather_ms": 1049,
+  "groq_ms": null,
+  "groq_model": null,
+  "groq_fallback": false,
+  "weather_source": "open-meteo",
+  "notes": [
+   "No Groq key configured → deterministic energy-audit rules used."
+  ],
+  "total_ms": 1883
+ }
+}
