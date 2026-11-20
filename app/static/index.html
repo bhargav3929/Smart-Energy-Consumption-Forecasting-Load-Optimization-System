@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Energy Forecast Workbench</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23C2410C'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23FBF9F5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#C2410C"/><circle cx="16" cy="16" r="5" fill="#FBF9F5"/><g stroke="#FBF9F5" stroke-width="2" stroke-linecap="round"><path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l2.8 2.8M21.7 21.7l2.8 2.8M7.5 24.5l2.8-2.8M21.7 10.3l2.8-2.8"/></g></svg>
+    <div><h1>Smart Energy Forecast</h1><span>Consumption forecasting &amp; load optimization</span></div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button class="tab active" role="tab" data-view="bill">Monthly Bill &amp; Peak Schedule</button>
+    <button class="tab" role="tab" data-view="compare">Scenario &amp; Facility Compare</button>
+    <button class="tab" role="tab" data-view="report">Load Reduction Report</button>
+  </nav>
+  <div class="actions">
+    <span id="quotaPill" class="pill" title="Server-side sliding window: 15 forecasts per hour">15/15 Free Demo Forecasts Left This Hour</span>
+    <button id="historyBtn" class="btn ghost">Forecast History</button>
+    <button id="keysBtn" class="btn ghost">API Keys</button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="panel input-panel">
+    <h2>1 · Choose a demo preset</h2>
+    <div id="presets" class="presets"></div>
+
+    <h2>2 · Location &amp; appliance usage log</h2>
+    <label class="field"><span>City (for 7-day weather)</span>
+      <input id="city" type="text" placeholder="e.g. Hyderabad" maxlength="80" autocomplete="off"></label>
+    <div class="table-wrap">
+      <table class="log" id="logTable">
+        <thead><tr><th>Appliance Name</th><th>Power (Watts)</th><th>Hours/Day</th><th>Preferred Run Window</th><th>Shiftable?</th><th></th></tr></thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+    <div class="row-actions">
+      <button id="addRow" class="btn small">+ Add appliance</button>
+      <label class="btn small file">Upload CSV/JSON log<input id="fileIn" type="file" accept=".csv,.json,text/csv,application/json" hidden></label>
+      <button id="sampleCsv" class="btn small ghost">Download sample_appliance_log.csv</button>
+    </div>
+    <p id="inputMsg" class="msg" role="status"></p>
+    <button id="runBtn" class="btn primary wide">Run Forecast &amp; Optimize</button>
+  </aside>
+
+  <section class="results">
+    <div class="runbar">
+      <div class="timer"><span class="lbl">Elapsed</span><b id="timer" class="mono">0.0s</b></div>
+      <ol id="stepper" class="stepper"></ol>
+    </div>
+    <details id="debugPanel" class="debug">
+      <summary>Execution &amp; Debug Logs</summary>
+      <div id="debugBody" class="debug-body"><p class="muted">Run a forecast to see per-node timings, API latency and raw NDJSON events.</p></div>
+    </details>
+
+    <div id="alert" class="alert" hidden></div>
+    <div id="empty" class="empty">
+      <h3>Ready when you are</h3>
+      <p>Pick a preset (or edit the appliance table, or upload a log) and press <b>Run Forecast &amp; Optimize</b>. The 5-node pipeline fetches live weather, projects your monthly bill and builds a peak-shaving schedule.</p>
+    </div>
+
+    <div id="view-bill" class="view" hidden></div>
+    <div id="view-compare" class="view" hidden></div>
+    <div id="view-report" class="view" hidden></div>
+  </section>
+</main>
+
+<footer class="footer">Disclaimer: Predicted electricity bills and load-shifting schedules are educational estimates based on weather and tariff models and do not constitute professional utility or financial advice.</footer>
+
+<div id="scrim" class="scrim" hidden></div>
+<aside id="drawer" class="drawer" hidden aria-label="Forecast History">
+  <div class="drawer-head"><h2>Forecast History</h2><button id="drawerClose" class="icon-btn" aria-label="Close">×</button></div>
+  <ul id="historyList" class="history"></ul>
+</aside>
+
+<div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card">
+    <div class="drawer-head"><h2 id="modalTitle">API Keys</h2><button id="modalClose" class="icon-btn" aria-label="Close">×</button></div>
+    <label class="field"><span>Groq API Key</span>
+      <input id="groqKey" type="password" placeholder="gsk_..." autocomplete="off" spellcheck="false"></label>
+    <a class="link" href="https://console.groq.com/keys" target="_blank" rel="noopener">Get a free Groq API Key (No credit card required) →</a>
+    <p class="muted small" id="keyState"></p>
+    <div class="row-actions">
+      <button id="testKey" class="btn">Test Key</button>
+      <button id="saveKey" class="btn primary">Save</button>
+    </div>
+    <p id="keyMsg" class="msg" role="status"></p>
+    <p class="muted small">Without a key the app still works using deterministic energy-audit rules.</p>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
