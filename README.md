@@ -83,3 +83,11 @@ Smart-Energy-Consumption-Forecasting-Load-Optimization-System/
 - **Install failed on a slow connection:** check your internet and run the start script again; it continues where it stopped.
 - **"Could not find a city":** check the spelling of the city name.
 - **"Hourly limit reached":** the 15-per-hour limit resets on a rolling basis; the message says how many minutes are left.
+
+Run the Commands:
+
+Windows (PowerShell):
+python -m venv .venv; .\.venv\Scripts\python.exe -m pip install -r requirements.txt; .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8005
+
+macOS / Linux (Terminal):
+python3 -m venv .venv && ./.venv/bin/python -m pip install -r requirements.txt && ./.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8005
