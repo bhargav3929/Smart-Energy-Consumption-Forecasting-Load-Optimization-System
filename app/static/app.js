@@ -28,15 +28,21 @@ const fmtMoney = (n, c = cur()) => c + Number(n).toLocaleString(c === "₹" ? "e
 const fmt = (n, d = 1) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const hh = (h) => String(h).padStart(2, "0") + ":00";
 
-// ---------- status / quota ----------
-function setQuota(q) {
-  const p = $("#quotaPill");
-  p.textContent = `${q.remaining}/${q.limit} Free Demo Forecasts Left This Hour`;
-  p.classList.toggle("low", q.remaining <= 3);
-  p.title = q.remaining < q.limit && q.reset_in ? `Oldest request frees up in ~${Math.ceil(q.reset_in / 60)} min` : "Server-side sliding window: 15 forecasts per hour";
-}
+// ---------- status ----------
+function setPill(text, low, title) { const p = $("#quotaPill"); p.textContent = text; p.classList.toggle("low", !!low); p.title = title || ""; }
 async function loadStatus() {
-  try { const s = await (await api("api/status")).json(); setQuota(s.quota); state.demo = !!s.demo_mode; $("#keysBtn").hidden = state.demo; return s; } catch { return null; }
+  try {
+    const s = await (await api("api/info")).json();
+    state.demo = s.mode === "demo"; $("#keysBtn").hidden = state.demo;
+    if (state.demo) {
+      const d = s.demo || {};
+      if (!d.ticket_valid) setPill("Samples only · sign in on lastsem.com to run your own", true);
+      else if (d.daily_cap_reached) setPill("Demo daily limit reached · samples still work", true);
+      else setPill(`${d.runs_left} live run${d.runs_left === 1 ? "" : "s"} left on this ticket`, d.runs_left < 1);
+    } else if (s.ai.ready) setPill("Groq AI ready", false, "Model: " + s.ai.model);
+    else setPill("No Groq key · click API Keys", true, "Paste your free key from console.groq.com/keys");
+    return s;
+  } catch { return null; }
 }
 
 // ---------- input panel ----------
@@ -128,15 +134,15 @@ async function runForecast() {
   let finished = false;
   try {
     const res = await api("api/forecast", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ city, label: state.label, appliances: state.rows }) });
-    if (!res.ok) { const j = await res.json().catch(() => ({})); if (j.quota) setQuota(j.quota); throw new Error(j.error || "Request failed (" + res.status + ")"); }
+    if (!res.ok) { const j = await res.json().catch(() => ({})); if (j.code === "AI_NOT_CONFIGURED" && !state.demo) openModal(); throw new Error(j.error || "Request failed (" + res.status + ")"); }
     const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
     const handle = (line) => {
       if (!line.trim()) return;
       const ev = JSON.parse(line);
       state.events.push(ev.type === "result" ? { type: "result", forecast_id: ev.forecast_id, data: "…(full forecast payload, " + line.length + " bytes)" } : ev);
       if (ev.type === "node") status[ev.id] = { status: ev.status, ms: ev.ms }; renderStepper(status);
-      if (ev.type === "error") { if (ev.node) status[ev.node] = { status: "error" }; renderStepper(status); showAlert(ev.message); if (ev.quota) setQuota(ev.quota); finished = true; }
-      if (ev.type === "result") { finished = true; state.forecast = ev.data; state.currentId = ev.forecast_id; if (ev.quota) setQuota(ev.quota); renderForecast(ev.data); }
+      if (ev.type === "error") { if (ev.node) status[ev.node] = { status: "error" }; renderStepper(status); showAlert(ev.error || ev.message); if (ev.code === "AI_NOT_CONFIGURED" && !state.demo) openModal(); if (ev.code === "AI_KEY_INVALID" && !state.demo) openModal(); finished = true; }
+      if (ev.type === "result") { finished = true; state.forecast = ev.data; state.currentId = ev.forecast_id; renderForecast(ev.data); }
       renderDebug(state.forecast && state.events.some((x) => x.type === "result") ? state.forecast : null);
     };
     for (;;) {
@@ -159,7 +165,7 @@ function renderDebug(f) {
   const nodeRows = (dbg ? dbg.nodes : []).map((n) => `<tr><td>${n.id}. ${esc(n.name)}</td><td class="r">${n.ms} ms</td></tr>`).join("");
   let html = "";
   if (dbg) {
-    const model = dbg.groq_model ? `${esc(dbg.groq_model)} ${dbg.groq_fallback ? '<span class="badge">(fallback)</span>' : '<span class="badge green">primary</span>'}` : '<span class="badge">deterministic rules (no Groq call)</span>';
+    const model = dbg.groq_model ? `${esc(dbg.groq_model)} ${dbg.groq_fallback ? '<span class="badge">(fallback)</span>' : '<span class="badge green">primary</span>'}` : '<span class="badge">no Groq call</span>';
     html += `<table class="dtable"><thead><tr><th>Node</th><th class="r">Time</th></tr></thead><tbody>${nodeRows}</tbody></table>
       <table class="dtable"><tbody>
         <tr><td>Open-Meteo geocoding latency</td><td class="r">${dbg.geocode_ms ?? "–"} ms</td></tr>

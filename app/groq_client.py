@@ -63,13 +63,14 @@ def _fail(attempts, errors, code):
     return {"data": None, "model": None, "fallback": False, "attempts": attempts, "errors": errors, "code": code}
 
 
-async def chat_json(messages, key: str, budget_s: float = 18.0, max_tokens: int = 900):
+async def chat_json(messages, key: str, budget_s: float = 90.0, max_tokens: int = 900):
     """Try each model (up to 3 attempts each) within a total time budget.
     Returns dict(data, model, fallback, attempts, errors, code). `code` is an AI_* code on failure."""
     deadline = time.monotonic() + budget_s
     errors, attempts, code = [], 0, "AI_FAILED"
     async with httpx.AsyncClient() as client:
         for idx, model in enumerate(models()):
+            json_retried = False
             for attempt in range(3):
                 remaining = deadline - time.monotonic()
                 if remaining < 1.5:
@@ -84,7 +85,7 @@ async def chat_json(messages, key: str, budget_s: float = 18.0, max_tokens: int 
                 try:
                     resp = await client.post(f"{GROQ_BASE}/chat/completions", json=body,
                                              headers={"Authorization": f"Bearer {key}"},
-                                             timeout=max(1.5, min(remaining, 9.0 if idx == 0 else remaining)))
+                                             timeout=max(1.5, min(remaining, 30.0)))
                     if resp.status_code == 200:
                         content = resp.json()["choices"][0]["message"].get("content") or ""
                         try:
@@ -92,11 +93,14 @@ async def chat_json(messages, key: str, budget_s: float = 18.0, max_tokens: int 
                         except Exception:
                             errors.append(f"{model}: invalid JSON output")
                             code = "AI_FAILED"
-                            break  # try the fallback model
+                            if json_retried:
+                                break  # try the fallback model
+                            json_retried = True
+                            continue  # retry once on the same model
                         return {"data": data, "model": model, "fallback": idx > 0, "attempts": attempts,
                                 "errors": errors, "code": None}
                     errors.append(f"{model}: {_clean(_err_message(resp), key)}")
-                    if resp.status_code in (401, 403):
+                    if resp.status_code == 401:
                         return _fail(attempts, errors, "AI_KEY_INVALID")
                     if resp.status_code not in RETRY_STATUS:
                         code = "AI_FAILED"
@@ -125,7 +129,7 @@ async def test_key(key: str):
             r = await client.get(f"{GROQ_BASE}/models", headers={"Authorization": f"Bearer {key}"}, timeout=10.0)
         if r.status_code == 200:
             return {"ok": True, "message": "Valid Groq Key"}
-        if r.status_code in (401, 403):
+        if r.status_code == 401:
             return {"ok": False, "message": MESSAGES["AI_KEY_INVALID"]}
         return {"ok": False, "message": MESSAGES["AI_BUSY"]}
     except Exception:

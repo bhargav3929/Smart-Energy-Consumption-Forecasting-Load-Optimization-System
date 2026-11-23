@@ -7,7 +7,7 @@ This app helps a household or small building cut its electricity bill. You give 
 ## What you need
 
 - **Python 3.10 or newer** — download from <https://www.python.org/downloads/> (on Windows, tick "Add python.exe to PATH").
-- **A free Groq key** (optional but recommended) — get one in about 1 minute, no card needed: <https://console.groq.com/keys>. Without a key the app still works and uses built-in energy-audit rules instead of AI advice.
+- **A free Groq key** — get one in about 1 minute, no card needed: <https://console.groq.com/keys>. The app asks for it the first time you run a forecast.
 - An internet connection (for the weather and for installing packages the first time).
 
 ## Run it (one command)
@@ -37,7 +37,7 @@ Air Conditioner,1500,8,21,false
 EV Charger,3300,4,19,true
 ```
 
-You can download a sample file from the app. Ready-made examples are also in the `samples/` folder. The free plan allows **15 forecasts per hour**; the counter at the top shows how many are left.
+You can download a sample file from the app. Ready-made examples are also in the `samples/` folder. There is no run limit; the pill at the top shows whether your Groq key is ready.
 
 ## How it works
 
@@ -46,7 +46,7 @@ Input → 5 steps → AI advice → report:
 1. **Gatekeeper** (`app/pipeline.py`) checks your appliance rows and finds the city's coordinates (Open-Meteo, no key needed).
 2. **Weather** (`app/pipeline.py`, `app/energy.py`) downloads 7 days of temperature and sunshine and turns them into a cooling/heating factor.
 3. **Bill & peak engine** (`app/energy.py`) builds a 24-hour load curve, applies the tariff, and moves shiftable loads out of the 18:00–22:00 peak.
-4. **Groq strategist** (`app/groq_client.py`) asks the Groq AI for tailored advice. It retries when Groq is busy and falls back to a second model, then to built-in rules, so you always get an answer.
+4. **Groq strategist** (`app/groq_client.py`) asks the Groq AI for tailored advice. It retries when Groq is busy and falls back to a second model. If both fail, you see a clear message and can run it again.
 5. **Report** (`app/db.py`) saves the forecast in a local SQLite file and sends everything to the page.
 
 The bill and kWh numbers are calculated by plain Python, not by the AI, so they are repeatable.
@@ -66,7 +66,7 @@ Smart-Energy-Consumption-Forecasting-Load-Optimization-System/
 │   ├── pipeline.py          the 5-step forecast pipeline
 │   ├── energy.py            load curves, tariff, peak shifting, CO₂
 │   ├── groq_client.py       Groq calls with retry and fallback
-│   ├── db.py                SQLite: key, hourly limit, history
+│   ├── db.py                SQLite: key, history
 │   ├── presets.py           the four example facilities
 │   └── static/              index.html, app.js, style.css
 ├── samples/                 example appliance logs (.csv)
@@ -77,12 +77,11 @@ Smart-Energy-Consumption-Forecasting-Load-Optimization-System/
 ## Troubleshooting
 
 - **Port already in use:** another program is using 8005. Close it, or change `PORT=` in `.env` (and open that port in the browser), then start again.
-- **"The AI service is busy right now":** Groq's free tier is overloaded. Wait a minute and run again. The app already retried and your forecast still completes with the built-in rules.
+- **"The AI service is busy right now":** Groq's free tier is overloaded. Wait a minute and run again. The app already retried and tried a second model. Nothing is lost; run it again.
 - **"Your Groq key was rejected":** open **API Keys** and paste a fresh key from <https://console.groq.com/keys>.
 - **Python not found:** install Python 3.10+ from <https://www.python.org/downloads/> and tick "Add python.exe to PATH", then run the start script again.
 - **Install failed on a slow connection:** check your internet and run the start script again; it continues where it stopped.
 - **"Could not find a city":** check the spelling of the city name.
-- **"Hourly limit reached":** the 15-per-hour limit resets on a rolling basis; the message says how many minutes are left.
 
 Run the Commands:
 

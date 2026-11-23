@@ -83,10 +83,6 @@ def _keys_guard(request, change: bool):
     return None
 
 
-def _quota_payload():
-    return db.quota_status()
-
-
 # ---------- pages & standard routes ----------
 async def index(request):
     return FileResponse(STATIC / "index.html")
@@ -108,7 +104,7 @@ async def info(request):
         "name": config.PROJECT_NAME, "slug": config.PROJECT_SLUG, "number": config.PROJECT_NUMBER, "version": config.VERSION,
         "mode": "demo" if config.DEMO_MODE else "local",
         "ai": {"provider": "groq", "ready": bool(key), "model": config.GROQ_MODEL},
-        "limits": {"max_upload_mb": max_mb, "forecasts_per_hour": db.RATE_LIMIT, **_quota_payload()},
+        "limits": {"max_upload_mb": max_mb},
         "demo": demo,
     })
 
@@ -176,7 +172,7 @@ async def keys_test(request):
 # ---------- feature routes ----------
 async def status(request):
     key, src = _key()
-    return JSONResponse({"quota": _quota_payload(), "has_key": bool(key), "key_source": src, "key_masked": _mask(key),
+    return JSONResponse({"has_key": bool(key), "key_source": src, "key_masked": _mask(key),
                          "demo_mode": config.DEMO_MODE})
 
 
@@ -228,32 +224,23 @@ async def forecast(request):
             return err("The demo has reached its daily limit. Please try again tomorrow.", "DAILY_CAP_REACHED", 429)
     tid = ticket_payload["tid"] if ticket_payload else ""
 
-    ticket = db.consume()
-    if ticket is None:
-        q = db.quota_status()
-        return err(f"Hourly limit reached (15/15 used). Resets in {q['reset_in'] // 60 + 1} min.", "RATE_LIMITED", 429, quota=q)
-
     key, _src = _key()
+    if not key:
+        msg = ("The demo's AI is not available right now. Please try again later." if config.DEMO_MODE
+               else "Add your free Groq key (click API Keys) to run a forecast.")
+        return err(msg, "AI_NOT_CONFIGURED", 503)
 
     async def gen():
         try:
             async for ev in run_pipeline(body, key, tid):
-                if ev["type"] == "error":
-                    if ev.get("refund"):
-                        db.refund(ticket)
-                    ev["error"] = ev["message"]
-                    ev["code"] = "BAD_INPUT" if ev.get("refund") else "AI_FAILED"
                 if ev["type"] == "result" and ticket_payload:
                     db.record_demo_run(tid)  # count only after a successful run
-                if ev["type"] in ("error", "result"):
-                    ev["quota"] = db.quota_status()
                 yield json.dumps(ev, ensure_ascii=False) + "\n"
-        except Exception as e:  # unexpected: refund and report
-            db.refund(ticket)
+        except Exception:  # unexpected failure: reported, and nothing is counted
             log.exception("pipeline failed")
             msg = "The forecast couldn't be completed. Please try again."
             yield json.dumps({"type": "error", "node": 0, "name": "Pipeline", "message": msg, "error": msg,
-                              "code": "AI_FAILED", "quota": db.quota_status()}) + "\n"
+                              "code": "AI_FAILED"}) + "\n"
 
     return StreamingResponse(gen(), media_type="application/x-ndjson")
 

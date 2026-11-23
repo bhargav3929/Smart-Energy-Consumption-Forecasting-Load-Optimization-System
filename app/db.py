@@ -1,8 +1,7 @@
-"""SQLite persistence: settings, sliding-window rate limit, forecast history."""
+"""SQLite persistence: settings, forecast history, demo run counts."""
 import json
 import os
 import sqlite3
-import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -10,9 +9,6 @@ from pathlib import Path
 from .config import usable_key
 
 DB_PATH = Path(os.getenv("SMART_ENERGY_DB", Path(__file__).resolve().parent.parent / "smart_energy.db"))
-RATE_LIMIT = 15
-WINDOW_SECONDS = 3600
-_lock = threading.Lock()
 
 
 @contextmanager
@@ -30,7 +26,6 @@ def init():
     with db() as c:
         c.execute("PRAGMA journal_mode=WAL")
         c.execute("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)")
-        c.execute("CREATE TABLE IF NOT EXISTS rate_limit (id INTEGER PRIMARY KEY AUTOINCREMENT, ts REAL NOT NULL)")
         c.execute(
             "CREATE TABLE IF NOT EXISTS forecasts (id INTEGER PRIMARY KEY AUTOINCREMENT, "
             "created_at REAL NOT NULL, title TEXT, city TEXT, payload TEXT NOT NULL)"
@@ -68,37 +63,6 @@ def get_groq_key(demo: bool = False):
     if usable_key(k):
         return k, "env"
     return "", "none"
-
-
-# ---------- rate limit (sliding window) ----------
-def quota_status():
-    now = time.time()
-    with db() as c:
-        c.execute("DELETE FROM rate_limit WHERE ts <= ?", (now - WINDOW_SECONDS,))
-        rows = c.execute("SELECT ts FROM rate_limit ORDER BY ts").fetchall()
-    used = len(rows)
-    reset = int(rows[0]["ts"] + WINDOW_SECONDS - now) if rows else 0
-    return {"limit": RATE_LIMIT, "remaining": max(0, RATE_LIMIT - used), "reset_in": max(0, reset)}
-
-
-def consume():
-    """Reserve one request. Returns a ticket id, or None if the hourly limit is exhausted."""
-    with _lock:
-        now = time.time()
-        with db() as c:
-            c.execute("DELETE FROM rate_limit WHERE ts <= ?", (now - WINDOW_SECONDS,))
-            used = c.execute("SELECT COUNT(*) n FROM rate_limit").fetchone()["n"]
-            if used >= RATE_LIMIT:
-                return None
-            cur = c.execute("INSERT INTO rate_limit(ts) VALUES(?)", (now,))
-            return cur.lastrowid
-
-
-def refund(ticket):
-    if ticket is None:
-        return
-    with _lock, db() as c:
-        c.execute("DELETE FROM rate_limit WHERE id=?", (ticket,))
 
 
 # ---------- forecast history ----------

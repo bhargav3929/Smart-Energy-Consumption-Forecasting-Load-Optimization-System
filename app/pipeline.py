@@ -1,6 +1,7 @@
 """5-node forecasting & load-optimization pipeline. Async generator of NDJSON-ready events."""
 import asyncio
 import json
+import logging
 import time
 import uuid
 from datetime import datetime
@@ -9,6 +10,8 @@ import httpx
 
 from . import db, energy, groq_client
 from .presets import PRESETS
+
+log = logging.getLogger("smart_energy")
 
 GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
@@ -20,7 +23,7 @@ NODES = {
     4: "Groq Load-Optimization Strategist",
     5: "Report & SQLite Persistence",
 }
-TIMEOUT_N1, TIMEOUT_N2, TIMEOUT_N4 = 4.0, 5.0, 18.0
+TIMEOUT_N1, TIMEOUT_N2, TIMEOUT_N4 = 4.0, 5.0, 90.0
 
 
 def _ms(t0):
@@ -127,8 +130,8 @@ async def run_pipeline(body: dict, key: str = "", tid: str = ""):
         nodes_dbg.append({"id": i, "name": NODES[i], "ms": ms})
         return {"type": "node", "id": i, "name": NODES[i], "status": "done", "ms": ms, "detail": detail}
 
-    def fail(i, t0, msg, refund=False):
-        return {"type": "error", "node": i, "name": NODES[i], "message": msg, "ms": _ms(t0), "refund": refund}
+    def fail(i, t0, msg, code="BAD_INPUT"):
+        return {"type": "error", "node": i, "name": NODES[i], "message": msg, "error": msg, "code": code, "ms": _ms(t0)}
 
     # ---- Node 1 ----
     t0 = time.perf_counter()
@@ -138,20 +141,20 @@ async def run_pipeline(body: dict, key: str = "", tid: str = ""):
     if not city_in:
         errs.append("Enter a city so we can fetch its weather.")
     if errs:
-        yield fail(1, t0, " ".join(errs), refund=True)
+        yield fail(1, t0, " ".join(errs))
         return
     try:
         g0 = time.perf_counter()
         geo = await asyncio.wait_for(_geocode(city_in), TIMEOUT_N1)
         dbg["geocode_ms"] = _ms(g0)
     except LookupError as e:
-        yield fail(1, t0, str(e), refund=True)
+        yield fail(1, t0, str(e))
         return
     except asyncio.TimeoutError:
-        yield fail(1, t0, f"City lookup timed out after {TIMEOUT_N1}s. Please retry.", refund=True)
+        yield fail(1, t0, f"City lookup timed out after {TIMEOUT_N1}s. Please retry.")
         return
     except Exception as e:
-        yield fail(1, t0, f"City lookup failed: {type(e).__name__}. Check your internet connection.", refund=True)
+        yield fail(1, t0, f"City lookup failed: {type(e).__name__}. Check your internet connection.")
         return
     tariff = energy.get_tariff(geo["country_code"])
     yield done(1, t0, f"{len(rows)} appliances · {geo['name']}, {geo['country']} ({geo['lat']:.2f}, {geo['lon']:.2f}) · {geo['timezone']}")
@@ -185,39 +188,37 @@ async def run_pipeline(body: dict, key: str = "", tid: str = ""):
     t0 = time.perf_counter()
     yield running(4)
     cur = tariff["currency"]
-    rules = _rule_based(rep, factors, cur)
-    strategist = {**rules, "source": "rules", "model": None, "fallback": False}
-    if key:
-        compact = {
-            "city": f"{geo['name']}, {geo['country']}", "avg_temp_c": factors.get("avg_temp"),
-            "cooling_degree_factor": factors["cooling"], "currency": cur, "peak_tariff_window": "18:00-22:00",
-            "daily_kwh": rep["daily_kwh_baseline"], "monthly_bill": rep["bill_baseline"], "peak_kw": rep["peak_kw_before"],
-            "optimized_peak_kw": rep["peak_kw_after"], "monthly_saving": rep["savings_month"],
-            "schedule": [{"appliance": s["appliance"], "watts": s["watts"], "action": s["action"], "daily_kwh": s["daily_kwh"],
-                          "original_window": s["original_window"], "new_window": s["new_window"]} for s in rep["schedule"][:8]],
-        }
-        msgs = [
-            {"role": "system", "content": "You are an energy-audit strategist. Reply with ONE JSON object only, no markdown."},
-            {"role": "user", "content": (
-                "Given this household/facility forecast, write tailored load-shifting advice. JSON keys: "
-                "\"summary\" (2 sentences), \"actions\" (max 6 objects with \"appliance\",\"action\",\"reason\"), "
-                "\"thermostat\" (max 3 short strings on set-point changes), \"tips\" (max 4 peak-tariff avoidance tips). "
-                "Be specific, concise, and consistent with the numbers.\n" + json.dumps(compact, ensure_ascii=False))},
-        ]
-        g0 = time.perf_counter()
-        res = await groq_client.chat_json(msgs, key, budget_s=TIMEOUT_N4, max_tokens=900)
-        dbg["groq_ms"] = _ms(g0)
-        if res["data"]:
-            strategist = {**_clean_ai(res["data"], rules), "source": "groq", "model": res["model"], "fallback": res["fallback"]}
-            dbg["groq_model"], dbg["groq_fallback"] = res["model"], res["fallback"]
-        else:
-            dbg["ai_code"] = res.get("code")
-            dbg["notes"].append("Groq unavailable → deterministic rules: " + groq_client.MESSAGES.get(res.get("code"), ""))
-            dbg["notes_tech"] = "; ".join(res["errors"])[:300]
-    else:
-        dbg["notes"].append("No Groq key configured → deterministic energy-audit rules used.")
-    yield done(4, t0, (f"Groq · {strategist['model']}" + (" (fallback)" if strategist["fallback"] else "")) if strategist["source"] == "groq"
-               else "Deterministic energy-audit rules")
+    rules = _rule_based(rep, factors, cur)  # used only to fill any field the AI leaves out
+    if not key:
+        yield fail(4, t0, "Add your free Groq key (API Keys) to get AI load-optimization advice.", "AI_NOT_CONFIGURED")
+        return
+    compact = {
+        "city": f"{geo['name']}, {geo['country']}", "avg_temp_c": factors.get("avg_temp"),
+        "cooling_degree_factor": factors["cooling"], "currency": cur, "peak_tariff_window": "18:00-22:00",
+        "daily_kwh": rep["daily_kwh_baseline"], "monthly_bill": rep["bill_baseline"], "peak_kw": rep["peak_kw_before"],
+        "optimized_peak_kw": rep["peak_kw_after"], "monthly_saving": rep["savings_month"],
+        "schedule": [{"appliance": s["appliance"], "watts": s["watts"], "action": s["action"], "daily_kwh": s["daily_kwh"],
+                      "original_window": s["original_window"], "new_window": s["new_window"]} for s in rep["schedule"][:8]],
+    }
+    msgs = [
+        {"role": "system", "content": "You are an energy-audit strategist. Reply with ONE JSON object only, no markdown."},
+        {"role": "user", "content": (
+            "Given this household/facility forecast, write tailored load-shifting advice. JSON keys: "
+            "\"summary\" (2 sentences), \"actions\" (max 6 objects with \"appliance\",\"action\",\"reason\"), "
+            "\"thermostat\" (max 3 short strings on set-point changes), \"tips\" (max 4 peak-tariff avoidance tips). "
+            "Be specific, concise, and consistent with the numbers.\n" + json.dumps(compact, ensure_ascii=False))},
+    ]
+    g0 = time.perf_counter()
+    res = await groq_client.chat_json(msgs, key, budget_s=TIMEOUT_N4, max_tokens=900)
+    dbg["groq_ms"] = _ms(g0)
+    if not res["data"]:
+        log.warning("Groq failed: %s", "; ".join(res["errors"])[:300])
+        code = res.get("code") or "AI_FAILED"
+        yield fail(4, t0, groq_client.MESSAGES.get(code, groq_client.MESSAGES["AI_FAILED"]), code)
+        return
+    strategist = {**_clean_ai(res["data"], rules), "source": "groq", "model": res["model"], "fallback": res["fallback"]}
+    dbg["groq_model"], dbg["groq_fallback"] = res["model"], res["fallback"]
+    yield done(4, t0, f"Groq · {strategist['model']}" + (" (fallback)" if strategist["fallback"] else ""))
 
     # ---- Node 5 ----
     t0 = time.perf_counter()
